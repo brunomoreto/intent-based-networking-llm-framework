@@ -1,0 +1,303 @@
+# Topology Specification
+
+**Document Version:** 1.0
+
+**Status:** Draft
+
+---
+
+# 1. Purpose
+
+This document specifies the unified topology model adopted by the Intent-Based Networking LLM Framework.
+
+The objective of this specification is to define a technology-independent representation capable of describing network topologies used throughout the framework.
+
+This model serves as the single source of truth for every framework component, including topology generation, network discovery, knowledge graph construction, LLM interaction, validation, and experiment execution.
+
+---
+
+# 2. Design Principles
+
+The topology model follows five fundamental principles.
+
+## P1. Technology Independence
+
+The model shall not depend on Mininet, ONOS, Neo4j, Docker, NetworkX or any specific implementation.
+
+## P2. Single Source of Truth
+
+Every module consumes the same topology model.
+
+## P3. Extensibility
+
+New network elements may be introduced without changing the core architecture.
+
+## P4. Reproducibility
+
+The same topology description shall reproduce identical experiments.
+
+## P5. Validation First
+
+Every topology must be validated before deployment.
+
+# 3. Unified Network Description Model
+
+The framework represents every network using a unified abstract model composed of:
+
+- Metadata
+- Network Elements
+- Links
+- Policies
+- Metrics
+
+The model is independent of any network technology.
+
+# 4. Core Entities
+
+The unified topology model is composed of a small set of abstract entities capable of representing different types of communication networks.
+
+Each entity has a well-defined responsibility and remains independent of any specific technology or implementation.
+
+The following entities constitute the foundation of the framework.
+
+---
+
+## 4.1 Topology
+
+A **Topology** represents the complete abstract description of a communication network.
+
+A topology is not a running network nor a specific implementation. Instead, it is a technology-independent representation from which different implementations can be generated.
+
+Every framework module consumes or produces a Topology object, making it the single source of truth throughout the experimental pipeline.
+
+A topology is composed of the following components:
+
+- Metadata
+- Network Elements
+- Links
+- Policies
+- Metrics
+
+---
+
+## 4.2 Metadata
+
+Metadata describes general information about the topology.
+
+Its purpose is to identify the network and provide contextual information without affecting its operational behavior.
+
+Typical metadata attributes include:
+
+- Name
+- Description
+- Author
+- Version
+- Creation Date
+- Topology Type
+- Tags
+
+Examples of topology types include:
+
+- N1
+- RNP
+- Fat-Tree
+- Spine-Leaf
+- Custom
+
+Metadata allows experiments to be cataloged, reproduced, and compared consistently.
+
+---
+
+## 4.3 Network Element
+
+A **Network Element** represents any logical component that participates in the network.
+
+Rather than modeling only switches and hosts, the framework adopts a generic abstraction capable of supporting future network technologies.
+
+Every network element possesses:
+
+- Unique identifier
+- Name
+- Type
+- Attributes
+- Optional metadata
+
+The framework initially defines the following element hierarchy:
+
+NetworkElement
+
+- Node
+    - Switch
+    - Host
+    - Controller
+    - Router
+
+Future extensions may introduce additional specialized elements without modifying the framework architecture.
+
+Examples include:
+
+- Firewall
+- Load Balancer
+- Gateway
+- Wireless Access Point
+- P4 Switch
+- Virtual Network Function (VNF)
+
+---
+
+## 4.4 Node
+
+A **Node** represents an active processing entity within the network.
+
+Nodes may forward packets, generate traffic, control the network, or execute services.
+
+Examples include:
+
+- OpenFlow Switch
+- Host
+- SDN Controller
+- Router
+
+Every node is uniquely identified within a topology.
+
+The topology model does not impose implementation-specific requirements, allowing different networking technologies to coexist under the same abstraction.
+
+---
+
+## 4.5 Link
+
+A **Link** represents a communication relationship between two network elements.
+
+Links describe logical connectivity rather than implementation details.
+
+Each link connects exactly two network elements.
+
+Typical link attributes include:
+
+- Source
+- Destination
+- Bandwidth
+- Delay
+- Packet Loss
+- Status
+- Bidirectional Flag
+- Custom Attributes
+
+The framework does not assume any specific communication protocol.
+
+Links may represent:
+
+- Ethernet
+- Optical Fiber
+- Wireless Connections
+- Virtual Links
+- Overlay Tunnels
+
+---
+
+## 4.6 Policies
+
+Policies describe operational constraints and high-level intentions associated with a topology.
+
+Policies are not mandatory during the initial implementation but are included in the model to support future extensions involving Intent-Based Networking.
+
+Examples include:
+
+- Security Policies
+- Connectivity Policies
+- QoS Policies
+- Isolation Policies
+- Routing Constraints
+
+Policies will later be consumed by the Validation Engine before any recommendation generated by an LLM is approved.
+
+---
+
+## 4.7 Metrics
+
+Metrics represent quantitative characteristics associated with a topology.
+
+Unlike structural entities, metrics are dynamically computed during experiments.
+
+Metrics allow objective comparison between different network states and support deterministic validation of LLM-generated recommendations.
+
+Initial metrics include:
+
+- Edge Connectivity
+- Vertex Connectivity
+- Network Diameter
+- Average Shortest Path
+- Average Degree
+
+Future versions may also include:
+
+- Betweenness Centrality
+- Closeness Centrality
+- Algebraic Connectivity
+- Network Efficiency
+- Clustering Coefficient
+- Resilience Index
+
+The Validation Engine will use these metrics to determine whether a proposed modification improves or degrades the network.
+
+---
+
+# 5. Validation Rules
+
+Before a topology can be deployed or evaluated, it must satisfy a set of structural validation rules.
+
+The objective of these rules is to guarantee consistency and prevent invalid network descriptions from propagating through the framework.
+
+A valid topology shall satisfy the following requirements:
+
+- Every network element must have a unique identifier.
+- Every link must reference existing network elements.
+- Duplicate identifiers are not permitted.
+- Links connecting an element to itself are prohibited unless explicitly allowed.
+- The topology must be serializable into the framework exchange format.
+- All mandatory metadata fields must be present.
+- Network elements shall contain a valid type definition.
+
+Additional validation rules may be introduced by specialized modules such as the Validation Engine.
+
+---
+
+# 6. Serialization Format
+
+The unified topology model shall be serialized using a structured JSON representation.
+
+This representation is referred to throughout the framework as the **Network Description Language (NDL)**.
+
+The NDL serves as the exchange format between all framework components.
+
+The same NDL document can be consumed by:
+
+- Mininet Builder
+- ONOS Collector
+- Neo4j Builder
+- LLM Exporter
+- Validation Engine
+- Execution Engine
+
+Using a common serialization format guarantees interoperability and reproducibility across experiments.
+
+---
+
+# 7. Future Extensions
+
+The topology specification has been intentionally designed to support future evolution without requiring modifications to the core architecture.
+
+Potential extensions include:
+
+- Wireless Networks
+- 5G Network Elements
+- SDN Multi-Domain Environments
+- Intent Policies
+- Security Policies
+- Service Function Chaining
+- P4 Programmable Switches
+- Virtual Network Functions
+- Digital Twin Integration
+- Cloud-native Network Services
+
+This extensibility ensures that the framework can evolve together with new networking paradigms while preserving compatibility with previously defined experiments.
