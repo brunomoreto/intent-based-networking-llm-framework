@@ -101,13 +101,49 @@ The **Topology** object represents the complete abstract description of a commun
 
 It is the central object of the framework and serves as the single source of truth for every processing stage.
 
+Topology is immutable with respect to infrastructure technologies. It represents only the conceptual state of the network and never references controller-specific, emulator-specific, or database-specific objects.
+
 A topology contains:
 
 - Metadata
-- Network Elements
+- Nodes
 - Links
 - Policies
 - Metrics
+
+Topology
+
+│
+
+├── Metadata
+
+├── Node
+
+├── Link
+
+├── Policy
+
+└── Metrics
+
+Node
+
+↓
+
+NetworkElement
+
+NetworkElement (classe base abstrata)
+
+↓
+
+Node (classe concreta)
+
+↓
+
+Switch
+Host
+Router
+Controller
+
 
 Every module either consumes or produces a Topology object.
 
@@ -141,8 +177,23 @@ Every Network Element contains:
 
 - Identifier
 - Name
-- Type
 - Attributes
+
+Node
+
+- Node Type
+- Properties
+
+NetworkElement
+                      ▲
+                      │
+                   Node
+        ┌────────┼────────┐
+        ▼        ▼        ▼
+    Switch     Host    Router
+                   ▼
+              Controller
+
 
 Specializations currently supported are:
 
@@ -257,15 +308,7 @@ Experiment
 
 ↓
 
-uses
-
-↓
-
 Topology
-
-↓
-
-produces
 
 ↓
 
@@ -273,19 +316,23 @@ Recommendation
 
 ↓
 
-validated by
-
-↓
-
 ValidationReport
 
 ↓
 
-approved
+Execution
 
 ↓
 
 Updated Topology
+
+↓
+
+Metrics
+
+↓
+
+Results
 ```
 
 ---
@@ -307,6 +354,20 @@ The domain model follows six principles.
 6. Experiment Reproducibility
 
 ---
+# 14. Domain Constraints
+
+A Topology shall contain exactly one Metadata object.
+
+Every Node shall have a unique identifier.
+
+Every Link shall connect two existing Nodes.
+
+A Link cannot connect a Node to itself.
+
+Policies shall not modify topology directly.
+
+Metrics are descriptive objects and never modify topology.
+
 
 # 14. Future Extensions
 
