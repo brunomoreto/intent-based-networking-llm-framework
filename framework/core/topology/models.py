@@ -11,13 +11,13 @@ This module intentionally contains no business logic.
 
 from __future__ import annotations
 
-from abc import ABC
+
 from dataclasses import dataclass, field
 
 from .enums import (
     LinkStatus,
     NodeType,
-    TopologyType,
+    TopologySource,
 )
 
 from .types import (
@@ -56,7 +56,7 @@ class Metadata:
 
     created_at: Timestamp | None = None
 
-    topology_type: TopologyType = TopologyType.CUSTOM
+    topology_source: TopologySource = TopologySource.CUSTOM
 
     tags: Tags = field(default_factory=list)
 
@@ -66,7 +66,7 @@ class Metadata:
 # =============================================================================
 
 @dataclass(slots=True, kw_only=True)
-class NetworkElement(ABC):
+class NetworkElement:
     """
     Represents the abstract base class for every network node.
     """
@@ -94,38 +94,42 @@ class Node(NetworkElement):
 
 @dataclass(slots=True, kw_only=True)
 class Switch(Node):
-    """
-    Represents a network switch.
-    """
+    """Represents a network switch."""
 
-    node_type: NodeType = NodeType.SWITCH
+    node_type: NodeType = field(
+        default=NodeType.SWITCH,
+        init=False,
+    )
 
 
 @dataclass(slots=True, kw_only=True)
 class Host(Node):
-    """
-    Represents a network host.
-    """
+    """Represents a network host."""
 
-    node_type: NodeType = NodeType.HOST
+    node_type: NodeType = field(
+        default=NodeType.HOST,
+        init=False,
+    )
 
 
 @dataclass(slots=True, kw_only=True)
 class Router(Node):
-    """
-    Represents a network router.
-    """
+    """Represents a network router."""
 
-    node_type: NodeType = NodeType.ROUTER
+    node_type: NodeType = field(
+        default=NodeType.ROUTER,
+        init=False,
+    )
 
 
 @dataclass(slots=True, kw_only=True)
 class Controller(Node):
-    """
-    Represents an SDN controller.
-    """
+    """Represents an SDN controller."""
 
-    node_type: NodeType = NodeType.CONTROLLER
+    node_type: NodeType = field(
+        default=NodeType.CONTROLLER,
+        init=False,
+    )
 
 
 # =============================================================================

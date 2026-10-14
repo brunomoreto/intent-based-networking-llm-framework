@@ -30,7 +30,7 @@ class NodeType(StrEnum):
 # =============================================================================
 
 class LinkStatus(StrEnum):
-    """Operational status of a network link."""
+    """Current status of a network link."""
 
     ACTIVE = "active"
     FAILED = "failed"
@@ -38,17 +38,17 @@ class LinkStatus(StrEnum):
 
 
 # =============================================================================
-# Topologies
+# Topology Sources
 # =============================================================================
 
-class TopologyType(StrEnum):
-    """Classification of a topology."""
+class TopologySource(StrEnum):
+    """Origin or provenance of a topology."""
 
     CUSTOM = "custom"
     REFERENCE = "reference"
     SYNTHETIC = "synthetic"
     PRODUCTION = "production"
-
+    
 
 # =============================================================================
 # Public API
@@ -57,5 +57,5 @@ class TopologyType(StrEnum):
 __all__ = [
     "NodeType",
     "LinkStatus",
-    "TopologyType",
+    "TopologySource",
 ]

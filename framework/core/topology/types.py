@@ -23,7 +23,7 @@ TopologyId: TypeAlias = str
 NodeId: TypeAlias = str
 LinkId: TypeAlias = str
 PolicyId: TypeAlias = str
-MetricId: TypeAlias = str
+
 
 
 # =============================================================================
@@ -32,9 +32,9 @@ MetricId: TypeAlias = str
 
 Attributes: TypeAlias = dict[str, Any]
 Properties: TypeAlias = dict[str, Any]
-
 Tags: TypeAlias = list[str]
-Labels: TypeAlias = list[str]
+
+#Labels: TypeAlias = list[str]
 
 
 # =============================================================================
@@ -55,7 +55,7 @@ MetricValues: TypeAlias = dict[str, MetricValue]
 # =============================================================================
 
 Timestamp: TypeAlias = datetime
-Coordinates: TypeAlias = tuple[float, float]
+#Coordinates: TypeAlias = tuple[float, float]
 
 
 __all__ = [
@@ -63,11 +63,9 @@ __all__ = [
     "NodeId",
     "LinkId",
     "PolicyId",
-    "MetricId",
     "Attributes",
     "Properties",
     "Tags",
-    "Labels",
     "Bandwidth",
     "Delay",
     "PacketLoss",
@@ -75,5 +73,4 @@ __all__ = [
     "MetricValue",
     "MetricValues",
     "Timestamp",
-    "Coordinates",
 ]

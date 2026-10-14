@@ -101,7 +101,9 @@ The **Topology** object represents the complete abstract description of a commun
 
 It is the central object of the framework and serves as the single source of truth for every processing stage.
 
-Topology is immutable with respect to infrastructure technologies. It represents only the conceptual state of the network and never references controller-specific, emulator-specific, or database-specific objects.
+Topology is independent of infrastructure technologies. It represents
+only the conceptual state of the network and does not reference
+controller-specific, emulator-specific, or database-specific objects.
 
 A topology contains:
 
@@ -111,6 +113,13 @@ A topology contains:
 - Policies
 - Metrics
 
+Domain identifiers are represented as string-based identifiers.
+The topology domain currently defines identifiers for topologies,
+nodes, links, and policies.
+
+Metric identifiers are not defined at this stage because metrics
+are represented as named values within the Metrics object rather
+than as independent domain entities.
 Topology
 
 │
@@ -160,11 +169,12 @@ Typical attributes include:
 - Author
 - Version
 - Creation Date
-- Topology Type
+- Topology Source
 - Tags
 
 Metadata has no operational impact on the network itself.
 
+The topology source identifies the origin or provenance of a topology. The current domain supports Custom, Reference, Synthetic, and Production sources. This classification is independent of the network's structural topology, such as a Spine-Leaf, Ring, or Mesh arrangement.
 ---
 
 # 7. Network Element
@@ -215,7 +225,7 @@ Future versions may include:
 
 # 8. Link
 
-A Link represents a logical communication relationship between two network elements.
+A Link represents a logical communication relationship between two Nodes.
 
 Each Link contains:
 
@@ -223,11 +233,18 @@ Each Link contains:
 - Destination
 - Bandwidth
 - Delay
-- Loss
+- Packet Loss
+- Weight
 - Status
+- Bidirectional Flag
 - Attributes
 
 The domain model intentionally avoids implementation-specific characteristics.
+
+The topology domain defines three link states: Active, Failed, and Disabled.
+Active indicates an operational link, Failed represents an operational failure,
+and Disabled indicates a link that has been deliberately deactivated. These
+states are sufficient for the current topology model.
 
 ---
 
