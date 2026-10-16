@@ -17,7 +17,7 @@ knowledge graphs, databases and Large Language Models.
 from .enums import (
     LinkStatus,
     NodeType,
-    TopologyType,
+    TopologySource,
 )
 
 # =============================================================================
@@ -41,10 +41,7 @@ from .models import (
 # Aggregate Root
 # =============================================================================
 
-# Uncomment after topology.py is implemented.
-#
-# from .topology import Topology
-
+from .topology import Topology
 
 # =============================================================================
 # Public API
@@ -54,7 +51,7 @@ __all__ = [
     # Enumerations
     "NodeType",
     "LinkStatus",
-    "TopologyType",
+    "TopologySource",
 
     # Domain Model
     "Metadata",
@@ -69,5 +66,5 @@ __all__ = [
     "Metrics",
 
     # Aggregate Root
-    # "Topology",
+    "Topology",
 ]
