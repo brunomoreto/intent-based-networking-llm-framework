@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "id": "n1-basic",
+    "name": "N1 Basic Topology",
+    "description": "Minimal synthetic topology for framework validation.",
+    "author": "Artigo",
+    "version": "1.0",
+    "topology_source": "synthetic",
+    "tags": ["synthetic", "n1", "baseline"]
+  },
+  "nodes": [
+    {
+      "id": "h1",
+      "name": "Host 1",
+      "node_type": "host",
+      "attributes": {},
+      "properties": {}
+    },
+    {
+      "id": "s1",
+      "name": "Switch 1",
+      "node_type": "switch",
+      "attributes": {},
+      "properties": {}
+    },
+    {
+      "id": "h2",
+      "name": "Host 2",
+      "node_type": "host",
+      "attributes": {},
+      "properties": {}
+    }
+  ],
+  "links": [
+    {
+      "id": "l1",
+      "source": "h1",
+      "destination": "s1",
+      "bandwidth": 1000,
+      "delay": 1,
+      "weight": 1,
+      "packet_loss": 0,
+      "status": "active",
+      "bidirectional": true,
+      "attributes": {}
+    },
+    {
+      "id": "l2",
+      "source": "s1",
+      "destination": "h2",
+      "bandwidth": 1000,
+      "delay": 1,
+      "weight": 1,
+      "packet_loss": 0,
+      "status": "active",
+      "bidirectional": true,
+      "attributes": {}
+    }
+  ],
+  "policies": [],
+  "metrics": {
+    "values": {}
+  }
+}
