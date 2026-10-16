@@ -284,3 +284,86 @@ def test_iteration_returns_nodes_without_exposing_internal_objects():
     nodes[0].name = "Changed externally"
 
     assert topology.get_node(nodes[0].id).name != "Changed externally"
+
+
+def test_has_methods_return_false_for_missing_ids():
+    topology = create_topology()
+
+    assert not topology.has_node("missing-node")
+    assert not topology.has_link("missing-link")
+    assert not topology.has_policy("missing-policy")
+
+
+def test_get_missing_link_raises_key_error():
+    topology = create_topology()
+
+    with pytest.raises(KeyError, match="does not exist"):
+        topology.get_link("missing-link")
+
+
+def test_get_missing_policy_raises_key_error():
+    topology = create_topology()
+
+    with pytest.raises(KeyError, match="does not exist"):
+        topology.get_policy("missing-policy")
+
+
+def test_remove_missing_node_raises_key_error():
+    topology = create_topology()
+
+    with pytest.raises(KeyError, match="does not exist"):
+        topology.remove_node("missing-node")
+
+
+def test_remove_missing_policy_raises_key_error():
+    topology = create_topology()
+
+    with pytest.raises(KeyError, match="does not exist"):
+        topology.remove_policy("missing-policy")
+
+
+def test_add_link_with_missing_source_raises_value_error():
+    topology = create_topology()
+    topology.add_node(create_host())
+
+    with pytest.raises(ValueError, match="Source node"):
+        topology.add_link(
+            create_link(source="missing-switch", destination="h1")
+        )
+
+
+def test_add_non_link_raises_type_error():
+    topology = create_topology()
+
+    with pytest.raises(TypeError, match="Link"):
+        topology.add_link("not-a-link")
+
+
+def test_add_non_policy_raises_type_error():
+    topology = create_topology()
+
+    with pytest.raises(TypeError, match="Policy"):
+        topology.add_policy("not-a-policy")
+
+
+def test_remove_link_preserves_remaining_topology():
+    topology = create_topology()
+    topology.add_node(create_switch())
+    topology.add_node(create_host())
+    topology.add_link(create_link())
+    topology.add_link(
+        create_link(
+            link_id="l2",
+            source="s1",
+            destination="h1",
+        )
+    )
+
+    topology.remove_link("l1")
+
+    assert not topology.has_link("l1")
+    assert topology.has_link("l2")
+    assert topology.has_node("s1")
+    assert topology.has_node("h1")
+    assert topology.is_structurally_valid()
+
