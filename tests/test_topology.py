@@ -163,3 +163,124 @@ def test_validate_topology_accepts_valid_topology():
 def test_validate_topology_rejects_invalid_object():
     with pytest.raises(TypeError, match="Topology"):
         validate_topology("not-a-topology")
+
+
+
+def test_metadata_is_protected_from_external_mutation():
+    topology = create_topology()
+
+    metadata = topology.metadata
+    metadata.name = "Changed name"
+    metadata.tags.append("external-change")
+
+    assert topology.metadata.name == "Test topology"
+    assert "external-change" not in topology.metadata.tags
+
+
+def test_nodes_mapping_is_read_only():
+    topology = create_topology()
+    topology.add_node(create_switch())
+
+    with pytest.raises(TypeError):
+        topology.nodes["h1"] = create_host()
+
+
+def test_nested_node_attributes_are_defensive_copies():
+    topology = create_topology()
+    switch = Switch(
+        id="s1",
+        name="Switch s1",
+        attributes={"config": {"priority": 10}},
+    )
+    topology.add_node(switch)
+
+    retrieved = topology.get_node("s1")
+    retrieved.attributes["config"]["priority"] = 99
+
+    assert topology.get_node("s1").attributes["config"]["priority"] == 10
+
+
+def test_link_returned_by_get_link_is_a_defensive_copy():
+    topology = create_topology()
+    topology.add_node(create_switch())
+    topology.add_node(create_host())
+    topology.add_link(
+        Link(
+            id="l1",
+            source="s1",
+            destination="h1",
+            attributes={"labels": ["original"]},
+        )
+    )
+
+    retrieved = topology.get_link("l1")
+    retrieved.attributes["labels"].append("external")
+
+    assert topology.get_link("l1").attributes["labels"] == ["original"]
+
+
+def test_policy_returned_by_get_policy_is_a_defensive_copy():
+    topology = create_topology()
+    topology.add_policy(
+        Policy(
+            id="p1",
+            name="Policy 1",
+            attributes={"rules": ["allow"]},
+        )
+    )
+
+    retrieved = topology.get_policy("p1")
+    retrieved.attributes["rules"].append("deny")
+
+    assert topology.get_policy("p1").attributes["rules"] == ["allow"]
+
+
+def test_remove_link_allows_removing_its_endpoints():
+    topology = create_topology()
+    topology.add_node(create_switch())
+    topology.add_node(create_host())
+    topology.add_link(create_link())
+
+    topology.remove_link("l1")
+
+    assert not topology.has_link("l1")
+    assert topology.is_structurally_valid()
+
+    topology.remove_node("s1")
+
+    assert not topology.has_node("s1")
+    assert topology.is_structurally_valid()
+
+
+def test_get_missing_node_raises_key_error():
+    topology = create_topology()
+
+    with pytest.raises(KeyError, match="does not exist"):
+        topology.get_node("missing")
+
+
+def test_remove_missing_link_raises_key_error():
+    topology = create_topology()
+
+    with pytest.raises(KeyError, match="does not exist"):
+        topology.remove_link("missing")
+
+
+def test_remove_policy():
+    topology = create_topology()
+    topology.add_policy(Policy(id="p1", name="Policy 1"))
+
+    topology.remove_policy("p1")
+
+    assert not topology.has_policy("p1")
+
+
+def test_iteration_returns_nodes_without_exposing_internal_objects():
+    topology = create_topology()
+    topology.add_node(create_switch())
+    topology.add_node(create_host())
+
+    nodes = list(topology)
+    nodes[0].name = "Changed externally"
+
+    assert topology.get_node(nodes[0].id).name != "Changed externally"
