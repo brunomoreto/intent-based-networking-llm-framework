@@ -1,4 +1,3 @@
-
 import json
 
 import pytest
@@ -16,6 +15,8 @@ from framework.core.topology.serialization import (
     save_topology,
 )
 from framework.core.topology.topology import Topology
+
+from pathlib import Path
 
 
 def create_topology() -> Topology:
@@ -255,3 +256,23 @@ def test_load_boolean_schema_version_raises_format_error(tmp_path):
 
     with pytest.raises(TopologyFormatError):
         load_topology(source)
+
+
+def test_load_basic_synthetic_topology():
+    project_root = Path(__file__).resolve().parents[1]
+    topology_path = (
+        project_root / "datasets" / "n1" / "basic_topology.json"
+    )
+
+    topology = load_topology(topology_path)
+
+    assert len(topology.nodes) == 3
+    assert len(topology.links) == 2
+    assert topology.is_structurally_valid()
+
+    assert topology.has_node("h1")
+    assert topology.has_node("s1")
+    assert topology.has_node("h2")
+
+    assert topology.has_link("l1")
+    assert topology.has_link("l2")
