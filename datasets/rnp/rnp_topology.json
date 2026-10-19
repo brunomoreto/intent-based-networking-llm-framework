@@ -1,0 +1,2407 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "id": "rnp-backbone-reference",
+    "name": "RNP Backbone Reference Topology",
+    "description": "Experimental topology derived from the supplied Neo4j Cypher script. Directional link declarations and repeated declarations are preserved. 'Compo Grande' is normalized to 'Campo Grande'. Capacity values are interpreted as Gb/s per user instruction; delay and packet loss are unspecified in the source and set to zero only as schema defaults.",
+    "author": "Artigo",
+    "version": "1.0",
+    "created_at": null,
+    "topology_source": "reference",
+    "tags": [
+      "rnp",
+      "backbone",
+      "reference",
+      "experimental",
+      "cypher-derived"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "city-rio-branco",
+      "name": "Rio Branco",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-porto-velho",
+      "name": "Porto Velho",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-manaus",
+      "name": "Manaus",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-boa-vista",
+      "name": "Boa Vista",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-macapa",
+      "name": "Macapá",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-belem",
+      "name": "Belém",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-sao-luis",
+      "name": "São Luís",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-palmas",
+      "name": "Palmas",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-cuiaba",
+      "name": "Cuiabá",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-goiania",
+      "name": "Goiânia",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-campo-grande",
+      "name": "Campo Grande",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-brasilia",
+      "name": "Brasília",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-sao-paulo",
+      "name": "São Paulo",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-rio-de-janeiro",
+      "name": "Rio de Janeiro",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-belo-horizonte",
+      "name": "Belo Horizonte",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-vitoria",
+      "name": "Vitória",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-florianopolis",
+      "name": "Florianópolis",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-porto-alegre",
+      "name": "Porto Alegre",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-recife",
+      "name": "Recife",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-joao-pessoa",
+      "name": "João Pessoa",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-maceio",
+      "name": "Maceió",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-aracaju",
+      "name": "Aracaju",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-salvador",
+      "name": "Salvador",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-natal",
+      "name": "Natal",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-fortaleza",
+      "name": "Fortaleza",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-teresina",
+      "name": "Teresina",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-curitiba",
+      "name": "Curitiba",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-campina-grande",
+      "name": "Campina Grande",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "RNP_PoP",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "Brazil",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-redclara-bella-t-am-latina",
+      "name": "RedClara/Bella-T(Am.Latina)",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "international_link",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "international",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-monet",
+      "name": "Monet",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "international_link",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "international",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-redclara",
+      "name": "RedClara",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "international_link",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "international",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-sacs-wacs-africa",
+      "name": "SACS-WACS(Africa)",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "international_link",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "international",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-monet-eua",
+      "name": "Monet(EUA)",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "international_link",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "international",
+        "capacity_unit": "Gb/s"
+      }
+    },
+    {
+      "id": "city-ellalink-europa",
+      "name": "Ellalink(Europa)",
+      "node_type": "router",
+      "attributes": {
+        "source_label": "international_link",
+        "source_script": "Script Criação RNP no Neo4j"
+      },
+      "properties": {
+        "geographic_scope": "international",
+        "capacity_unit": "Gb/s"
+      }
+    }
+  ],
+  "links": [
+    {
+      "id": "rnp-link-0001",
+      "source": "city-sao-paulo",
+      "destination": "city-curitiba",
+      "bandwidth": 300.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 1,
+        "source_capacity_value": 300
+      }
+    },
+    {
+      "id": "rnp-link-0002",
+      "source": "city-curitiba",
+      "destination": "city-florianopolis",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 2,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0003",
+      "source": "city-florianopolis",
+      "destination": "city-porto-alegre",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 3,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0004",
+      "source": "city-porto-alegre",
+      "destination": "city-redclara-bella-t-am-latina",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 4,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0005",
+      "source": "city-porto-alegre",
+      "destination": "city-sao-paulo",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 5,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0006",
+      "source": "city-porto-alegre",
+      "destination": "city-curitiba",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 6,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0007",
+      "source": "city-florianopolis",
+      "destination": "city-sao-paulo",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 7,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0008",
+      "source": "city-sao-paulo",
+      "destination": "city-curitiba",
+      "bandwidth": 300.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 8,
+        "source_capacity_value": 300
+      }
+    },
+    {
+      "id": "rnp-link-0009",
+      "source": "city-sao-paulo",
+      "destination": "city-monet",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 9,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0010",
+      "source": "city-sao-paulo",
+      "destination": "city-redclara",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 10,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0011",
+      "source": "city-sao-paulo",
+      "destination": "city-fortaleza",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 11,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0012",
+      "source": "city-rio-de-janeiro",
+      "destination": "city-vitoria",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 12,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0013",
+      "source": "city-rio-de-janeiro",
+      "destination": "city-belo-horizonte",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 13,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0014",
+      "source": "city-vitoria",
+      "destination": "city-rio-de-janeiro",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 14,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0015",
+      "source": "city-brasilia",
+      "destination": "city-salvador",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 15,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0016",
+      "source": "city-brasilia",
+      "destination": "city-goiania",
+      "bandwidth": 20.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 16,
+        "source_capacity_value": 20
+      }
+    },
+    {
+      "id": "rnp-link-0017",
+      "source": "city-brasilia",
+      "destination": "city-manaus",
+      "bandwidth": 3.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 17,
+        "source_capacity_value": 3
+      }
+    },
+    {
+      "id": "rnp-link-0018",
+      "source": "city-brasilia",
+      "destination": "city-belo-horizonte",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 18,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0019",
+      "source": "city-brasilia",
+      "destination": "city-sao-luis",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 19,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0020",
+      "source": "city-brasilia",
+      "destination": "city-fortaleza",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 20,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0021",
+      "source": "city-goiania",
+      "destination": "city-cuiaba",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 21,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0022",
+      "source": "city-goiania",
+      "destination": "city-campo-grande",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 22,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0023",
+      "source": "city-goiania",
+      "destination": "city-campo-grande",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 23,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0024",
+      "source": "city-campina-grande",
+      "destination": "city-recife",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 24,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0025",
+      "source": "city-fortaleza",
+      "destination": "city-ellalink-europa",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 25,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0026",
+      "source": "city-fortaleza",
+      "destination": "city-sacs-wacs-africa",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 26,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0027",
+      "source": "city-fortaleza",
+      "destination": "city-monet-eua",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 27,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0028",
+      "source": "city-fortaleza",
+      "destination": "city-boa-vista",
+      "bandwidth": 1.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 28,
+        "source_capacity_value": 1
+      }
+    },
+    {
+      "id": "rnp-link-0029",
+      "source": "city-fortaleza",
+      "destination": "city-salvador",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 29,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0030",
+      "source": "city-belo-horizonte",
+      "destination": "city-salvador",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 30,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0031",
+      "source": "city-natal",
+      "destination": "city-campina-grande",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 31,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0032",
+      "source": "city-joao-pessoa",
+      "destination": "city-campina-grande",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 32,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0033",
+      "source": "city-sao-paulo",
+      "destination": "city-rio-de-janeiro",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 33,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0034",
+      "source": "city-sao-paulo",
+      "destination": "city-belo-horizonte",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 34,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0035",
+      "source": "city-belo-horizonte",
+      "destination": "city-vitoria",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 35,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0036",
+      "source": "city-vitoria",
+      "destination": "city-salvador",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 36,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0037",
+      "source": "city-brasilia",
+      "destination": "city-sao-paulo",
+      "bandwidth": 20.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 37,
+        "source_capacity_value": 20
+      }
+    },
+    {
+      "id": "rnp-link-0038",
+      "source": "city-brasilia",
+      "destination": "city-goiania",
+      "bandwidth": 20.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 38,
+        "source_capacity_value": 20
+      }
+    },
+    {
+      "id": "rnp-link-0039",
+      "source": "city-fortaleza",
+      "destination": "city-natal",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 39,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0040",
+      "source": "city-recife",
+      "destination": "city-joao-pessoa",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 40,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0041",
+      "source": "city-recife",
+      "destination": "city-maceio",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 41,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0042",
+      "source": "city-maceio",
+      "destination": "city-aracaju",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 42,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0043",
+      "source": "city-aracaju",
+      "destination": "city-salvador",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 43,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0044",
+      "source": "city-fortaleza",
+      "destination": "city-teresina",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 44,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0045",
+      "source": "city-brasilia",
+      "destination": "city-cuiaba",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 45,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0046",
+      "source": "city-cuiaba",
+      "destination": "city-campo-grande",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 46,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0047",
+      "source": "city-campo-grande",
+      "destination": "city-curitiba",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 47,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0048",
+      "source": "city-brasilia",
+      "destination": "city-palmas",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 48,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0049",
+      "source": "city-brasilia",
+      "destination": "city-goiania",
+      "bandwidth": 20.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 49,
+        "source_capacity_value": 20
+      }
+    },
+    {
+      "id": "rnp-link-0050",
+      "source": "city-manaus",
+      "destination": "city-boa-vista",
+      "bandwidth": 1.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 50,
+        "source_capacity_value": 1
+      }
+    },
+    {
+      "id": "rnp-link-0051",
+      "source": "city-porto-velho",
+      "destination": "city-rio-branco",
+      "bandwidth": 6.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 51,
+        "source_capacity_value": 6
+      }
+    },
+    {
+      "id": "rnp-link-0052",
+      "source": "city-porto-velho",
+      "destination": "city-cuiaba",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 52,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0053",
+      "source": "city-belem",
+      "destination": "city-macapa",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 53,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0054",
+      "source": "city-belem",
+      "destination": "city-palmas",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 54,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0055",
+      "source": "city-manaus",
+      "destination": "city-macapa",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 55,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0056",
+      "source": "city-teresina",
+      "destination": "city-sao-luis",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 56,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0057",
+      "source": "city-belem",
+      "destination": "city-sao-luis",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 57,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0058",
+      "source": "city-curitiba",
+      "destination": "city-sao-paulo",
+      "bandwidth": 300.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 58,
+        "source_capacity_value": 300
+      }
+    },
+    {
+      "id": "rnp-link-0059",
+      "source": "city-florianopolis",
+      "destination": "city-curitiba",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 59,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0060",
+      "source": "city-porto-alegre",
+      "destination": "city-florianopolis",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 60,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0061",
+      "source": "city-redclara-bella-t-am-latina",
+      "destination": "city-porto-alegre",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 61,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0062",
+      "source": "city-sao-paulo",
+      "destination": "city-porto-alegre",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 62,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0063",
+      "source": "city-curitiba",
+      "destination": "city-porto-alegre",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 63,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0064",
+      "source": "city-sao-paulo",
+      "destination": "city-florianopolis",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 64,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0065",
+      "source": "city-curitiba",
+      "destination": "city-sao-paulo",
+      "bandwidth": 300.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 65,
+        "source_capacity_value": 300
+      }
+    },
+    {
+      "id": "rnp-link-0066",
+      "source": "city-monet",
+      "destination": "city-sao-paulo",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 66,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0067",
+      "source": "city-redclara",
+      "destination": "city-sao-paulo",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 67,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0068",
+      "source": "city-fortaleza",
+      "destination": "city-sao-paulo",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 68,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0069",
+      "source": "city-vitoria",
+      "destination": "city-rio-de-janeiro",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 69,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0070",
+      "source": "city-belo-horizonte",
+      "destination": "city-rio-de-janeiro",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 70,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0071",
+      "source": "city-rio-de-janeiro",
+      "destination": "city-vitoria",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 71,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0072",
+      "source": "city-salvador",
+      "destination": "city-brasilia",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 72,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0073",
+      "source": "city-goiania",
+      "destination": "city-brasilia",
+      "bandwidth": 20.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 73,
+        "source_capacity_value": 20
+      }
+    },
+    {
+      "id": "rnp-link-0074",
+      "source": "city-manaus",
+      "destination": "city-brasilia",
+      "bandwidth": 3.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 74,
+        "source_capacity_value": 3
+      }
+    },
+    {
+      "id": "rnp-link-0075",
+      "source": "city-belo-horizonte",
+      "destination": "city-brasilia",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 75,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0076",
+      "source": "city-sao-luis",
+      "destination": "city-brasilia",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 76,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0077",
+      "source": "city-fortaleza",
+      "destination": "city-brasilia",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 77,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0078",
+      "source": "city-cuiaba",
+      "destination": "city-goiania",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 78,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0079",
+      "source": "city-campo-grande",
+      "destination": "city-goiania",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 79,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0080",
+      "source": "city-campo-grande",
+      "destination": "city-goiania",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 80,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0081",
+      "source": "city-recife",
+      "destination": "city-campina-grande",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 81,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0082",
+      "source": "city-ellalink-europa",
+      "destination": "city-fortaleza",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 82,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0083",
+      "source": "city-sacs-wacs-africa",
+      "destination": "city-fortaleza",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 83,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0084",
+      "source": "city-monet-eua",
+      "destination": "city-fortaleza",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 84,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0085",
+      "source": "city-boa-vista",
+      "destination": "city-fortaleza",
+      "bandwidth": 1.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 85,
+        "source_capacity_value": 1
+      }
+    },
+    {
+      "id": "rnp-link-0086",
+      "source": "city-salvador",
+      "destination": "city-fortaleza",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 86,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0087",
+      "source": "city-salvador",
+      "destination": "city-belo-horizonte",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 87,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0088",
+      "source": "city-campina-grande",
+      "destination": "city-natal",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 88,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0089",
+      "source": "city-campina-grande",
+      "destination": "city-joao-pessoa",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 89,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0090",
+      "source": "city-rio-de-janeiro",
+      "destination": "city-sao-paulo",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 90,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0091",
+      "source": "city-belo-horizonte",
+      "destination": "city-sao-paulo",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 91,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0092",
+      "source": "city-vitoria",
+      "destination": "city-belo-horizonte",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 92,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0093",
+      "source": "city-salvador",
+      "destination": "city-vitoria",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 93,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0094",
+      "source": "city-sao-paulo",
+      "destination": "city-brasilia",
+      "bandwidth": 20.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 94,
+        "source_capacity_value": 20
+      }
+    },
+    {
+      "id": "rnp-link-0095",
+      "source": "city-goiania",
+      "destination": "city-brasilia",
+      "bandwidth": 20.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 95,
+        "source_capacity_value": 20
+      }
+    },
+    {
+      "id": "rnp-link-0096",
+      "source": "city-natal",
+      "destination": "city-fortaleza",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 96,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0097",
+      "source": "city-joao-pessoa",
+      "destination": "city-recife",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 97,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0098",
+      "source": "city-maceio",
+      "destination": "city-recife",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 98,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0099",
+      "source": "city-aracaju",
+      "destination": "city-maceio",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 99,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0100",
+      "source": "city-salvador",
+      "destination": "city-aracaju",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 100,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0101",
+      "source": "city-teresina",
+      "destination": "city-fortaleza",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 101,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0102",
+      "source": "city-cuiaba",
+      "destination": "city-brasilia",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 102,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0103",
+      "source": "city-campo-grande",
+      "destination": "city-cuiaba",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 103,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0104",
+      "source": "city-curitiba",
+      "destination": "city-campo-grande",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 104,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0105",
+      "source": "city-palmas",
+      "destination": "city-brasilia",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 105,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0106",
+      "source": "city-goiania",
+      "destination": "city-brasilia",
+      "bandwidth": 20.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 106,
+        "source_capacity_value": 20
+      }
+    },
+    {
+      "id": "rnp-link-0107",
+      "source": "city-boa-vista",
+      "destination": "city-manaus",
+      "bandwidth": 1.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 107,
+        "source_capacity_value": 1
+      }
+    },
+    {
+      "id": "rnp-link-0108",
+      "source": "city-rio-branco",
+      "destination": "city-porto-velho",
+      "bandwidth": 6.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 108,
+        "source_capacity_value": 6
+      }
+    },
+    {
+      "id": "rnp-link-0109",
+      "source": "city-cuiaba",
+      "destination": "city-porto-velho",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 109,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0110",
+      "source": "city-macapa",
+      "destination": "city-belem",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 110,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0111",
+      "source": "city-palmas",
+      "destination": "city-belem",
+      "bandwidth": 100.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 111,
+        "source_capacity_value": 100
+      }
+    },
+    {
+      "id": "rnp-link-0112",
+      "source": "city-macapa",
+      "destination": "city-manaus",
+      "bandwidth": 200.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 112,
+        "source_capacity_value": 200
+      }
+    },
+    {
+      "id": "rnp-link-0113",
+      "source": "city-sao-luis",
+      "destination": "city-teresina",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 113,
+        "source_capacity_value": 10
+      }
+    },
+    {
+      "id": "rnp-link-0114",
+      "source": "city-sao-luis",
+      "destination": "city-belem",
+      "bandwidth": 10.0,
+      "delay": 0.0,
+      "weight": 1.0,
+      "packet_loss": 0.0,
+      "status": "active",
+      "bidirectional": false,
+      "attributes": {
+        "capacity_unit": "Gb/s",
+        "source_relationship": "CONEXAO",
+        "source_occurrence": 114,
+        "source_capacity_value": 10
+      }
+    }
+  ],
+  "policies": [],
+  "metrics": {
+    "values": {}
+  }
+}
