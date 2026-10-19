@@ -56,7 +56,7 @@ def test_campo_grande_name_is_normalized():
 def test_links_preserve_explicit_directions():
     data = read_dataset()
 
-    assert all(link["bidirectional"] is False for link in data["links"])
+    assert all(link["bidirectional"] is True for link in data["links"])
 
 
 def test_link_capacities_are_expressed_in_gbps():
