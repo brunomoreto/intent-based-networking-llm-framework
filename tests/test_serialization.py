@@ -276,3 +276,64 @@ def test_load_basic_synthetic_topology():
 
     assert topology.has_link("l1")
     assert topology.has_link("l2")
+
+def test_load_redundant_synthetic_topology():
+    project_root = Path(__file__).resolve().parents[1]
+    topology_path = (
+        project_root / "datasets" / "n1" / "redundant_topology.json"
+    )
+
+    topology = load_topology(topology_path)
+
+    assert len(topology.nodes) == 6
+    assert len(topology.links) == 6
+    assert topology.is_structurally_valid()
+
+    for node_id in ("h1", "s1", "s2", "s3", "s4", "h2"):
+        assert topology.has_node(node_id)
+
+    for link_id in ("l1", "l2", "l3", "l4", "l5", "l6"):
+        assert topology.has_link(link_id)
+
+
+def test_redundant_topology_preserves_connectivity_after_internal_link_failure():
+    from collections import deque
+
+    project_root = Path(__file__).resolve().parents[1]
+    topology_path = (
+        project_root / "datasets" / "n1" / "redundant_topology.json"
+    )
+    topology = load_topology(topology_path)
+
+    def is_reachable(excluded_link_id=None):
+        adjacency = {node_id: set() for node_id in topology.nodes}
+
+        for link in topology.links.values():
+            if link.id == excluded_link_id or link.status.value != "active":
+                continue
+
+            adjacency[link.source].add(link.destination)
+            if link.bidirectional:
+                adjacency[link.destination].add(link.source)
+
+        visited = {"h1"}
+        queue = deque(["h1"])
+
+        while queue:
+            current = queue.popleft()
+
+            if current == "h2":
+                return True
+
+            for neighbor in adjacency[current]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+
+        return False
+
+    assert is_reachable()
+    assert is_reachable(excluded_link_id="l2")
+    assert is_reachable(excluded_link_id="l3")
+    assert not is_reachable(excluded_link_id="l1")
+    assert not is_reachable(excluded_link_id="l6")
