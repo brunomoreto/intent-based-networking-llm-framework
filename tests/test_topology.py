@@ -1,6 +1,10 @@
 
 import pytest
+from copy import deepcopy
 
+from pathlib import Path
+
+from framework.core.topology.serialization import load_topology
 from framework.core.topology.enums import TopologySource
 from framework.core.topology.exceptions import TopologyValidationError
 from framework.core.topology.models import (
@@ -367,3 +371,22 @@ def test_remove_link_preserves_remaining_topology():
     assert topology.has_node("h1")
     assert topology.is_structurally_valid()
 
+def test_link_failure_does_not_modify_original_topology():
+    dataset_path = (
+        Path(__file__).resolve().parents[1]
+        / "datasets"
+        / "n1"
+        / "redundant_topology.json"
+    )
+
+    original = load_topology(dataset_path)
+    experiment = deepcopy(original)
+
+    original_link_ids = set(original.links)
+
+    experiment.remove_link("l2")
+
+    assert not experiment.has_link("l2")
+    assert set(original.links) == original_link_ids
+    assert original.has_link("l2")
+    assert experiment.is_structurally_valid()
