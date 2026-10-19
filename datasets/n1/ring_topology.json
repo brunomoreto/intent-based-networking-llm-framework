@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "id": "n1-ring",
+    "name": "N1 Ring Topology",
+    "description": "Synthetic ring topology for connectivity and link failure resilience experiments.",
+    "author": "Artigo",
+    "version": "1.0",
+    "topology_source": "synthetic",
+    "tags": [
+      "synthetic",
+      "n1",
+      "ring",
+      "resilience"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "h1",
+      "name": "Host 1",
+      "node_type": "host",
+      "attributes": {},
+      "properties": {}
+    },
+    {
+      "id": "s1",
+      "name": "Switch 1",
+      "node_type": "switch",
+      "attributes": {},
+      "properties": {}
+    },
+    {
+      "id": "s2",
+      "name": "Switch 2",
+      "node_type": "switch",
+      "attributes": {},
+      "properties": {}
+    },
+    {
+      "id": "s3",
+      "name": "Switch 3",
+      "node_type": "switch",
+      "attributes": {},
+      "properties": {}
+    },
+    {
+      "id": "s4",
+      "name": "Switch 4",
+      "node_type": "switch",
+      "attributes": {},
+      "properties": {}
+    },
+    {
+      "id": "h2",
+      "name": "Host 2",
+      "node_type": "host",
+      "attributes": {},
+      "properties": {}
+    }
+  ],
+  "links": [
+    {
+      "id": "l1",
+      "source": "h1",
+      "destination": "s1",
+      "bandwidth": 1000,
+      "delay": 1,
+      "weight": 1,
+      "packet_loss": 0,
+      "status": "active",
+      "bidirectional": true,
+      "attributes": {}
+    },
+    {
+      "id": "l2",
+      "source": "s1",
+      "destination": "s2",
+      "bandwidth": 1000,
+      "delay": 1,
+      "weight": 1,
+      "packet_loss": 0,
+      "status": "active",
+      "bidirectional": true,
+      "attributes": {}
+    },
+    {
+      "id": "l3",
+      "source": "s2",
+      "destination": "s3",
+      "bandwidth": 1000,
+      "delay": 1,
+      "weight": 1,
+      "packet_loss": 0,
+      "status": "active",
+      "bidirectional": true,
+      "attributes": {}
+    },
+    {
+      "id": "l4",
+      "source": "s3",
+      "destination": "s4",
+      "bandwidth": 1000,
+      "delay": 1,
+      "weight": 1,
+      "packet_loss": 0,
+      "status": "active",
+      "bidirectional": true,
+      "attributes": {}
+    },
+    {
+      "id": "l5",
+      "source": "s4",
+      "destination": "s1",
+      "bandwidth": 1000,
+      "delay": 1,
+      "weight": 1,
+      "packet_loss": 0,
+      "status": "active",
+      "bidirectional": true,
+      "attributes": {}
+    },
+    {
+      "id": "l6",
+      "source": "s3",
+      "destination": "h2",
+      "bandwidth": 1000,
+      "delay": 1,
+      "weight": 1,
+      "packet_loss": 0,
+      "status": "active",
+      "bidirectional": true,
+      "attributes": {}
+    }
+  ],
+  "policies": [],
+  "metrics": {
+    "values": {}
+  }
+}
