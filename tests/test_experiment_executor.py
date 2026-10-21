@@ -60,3 +60,25 @@ def test_experiment_records_execution_time():
     )
 
     assert result.execution_time_ms >= 0
+
+
+def test_experiment_records_path_computation_time():
+    result = run_experiment(
+        topology_path=DATASET_PATH,
+        source="h1",
+        destination="h2",
+        failed_link_id="l2",
+    )
+
+    assert result.path_computation_time_ms >= 0
+
+
+def test_experiment_records_validation_time():
+    result = run_experiment(
+        topology_path=DATASET_PATH,
+        source="h1",
+        destination="h2",
+        failed_link_id="l2",
+    )
+
+    assert result.validation_time_ms >= 0

@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from time import perf_counter
+
 from framework.services.validator.path_validator import validate_path
 from framework.core.topology.serialization import load_topology
 from framework.core.topology.topology import Topology
@@ -16,6 +17,8 @@ class ExperimentResult:
     path: list[str] | None
     failed_link_id: str
     execution_time_ms: float
+    path_computation_time_ms: float
+    validation_time_ms: float
 
 
 def run_experiment(
@@ -44,14 +47,17 @@ def run_experiment(
 
     experiment_topology.remove_link(failed_link_id)
 
+    path_start_time = perf_counter()
     path = find_path(
         experiment_topology,
         source,
         destination,
     )
+    path_computation_time_ms = (
+        perf_counter() - path_start_time
+    ) * 1000
 
-    execution_time_ms = (perf_counter() - start_time) * 1000
-
+    validation_start_time = perf_counter()
     success = validate_path(
         experiment_topology,
         path,
@@ -59,10 +65,17 @@ def run_experiment(
         destination=destination,
         failed_link_id=failed_link_id,
     )
+    validation_time_ms = (
+        perf_counter() - validation_start_time
+    ) * 1000
+
+    execution_time_ms = (perf_counter() - start_time) * 1000
 
     return ExperimentResult(
         success=success,
         path=path,
         failed_link_id=failed_link_id,
         execution_time_ms=execution_time_ms,
+        path_computation_time_ms=path_computation_time_ms,
+        validation_time_ms=validation_time_ms,
     )
