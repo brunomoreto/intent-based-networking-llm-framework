@@ -104,7 +104,6 @@ def monitor_for(duration, event_queue, rows, state, phase):
         time.sleep(0.02)
     collect_events(event_queue, rows, state, phase)
 
-
 def save_csv(rows):
     result_dir = PROJECT_ROOT / "experiments" / "failure_recovery" / "results"
     result_dir.mkdir(parents=True, exist_ok=True)

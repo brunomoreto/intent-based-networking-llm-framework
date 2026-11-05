@@ -99,7 +99,7 @@ As aplicações ONOS utilizadas no ambiente incluem:
 O experimento foi executado por meio do script:
 
 ```text
-experiments/failure_recovery/test_n1_link_failure.py
+ experiments/failure_recovery/test_n1_link_failure.py
 ```
 
 A execução foi organizada nas seguintes etapas.
