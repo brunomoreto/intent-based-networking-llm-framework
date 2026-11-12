@@ -21,9 +21,6 @@ class UnsupportedSchemaVersionError(SerializationError):
     """Raised when the JSON schema version is not supported."""
 
 
-class TopologyValidationError(TopologyError):
-    """Raised when a topology violates structural validation rules."""
-
 
 __all__ = [
     "TopologyError",
@@ -31,5 +28,4 @@ __all__ = [
     "TopologyFileError",
     "TopologyFormatError",
     "UnsupportedSchemaVersionError",
-    "TopologyValidationError",
 ]
