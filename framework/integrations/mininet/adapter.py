@@ -55,6 +55,22 @@ def _build_interface_index(topology: Topology) -> dict[str, tuple[Any, Any]]:
 
     return index
 
+def _validate_interface_ports(nodes: list[Any]) -> None:
+    """Ensure each Node maps Interfaces to unique Mininet ports."""
+    for node in nodes:
+        used_ports: dict[int, str] = {}
+
+        for interface in node.interfaces:
+            port = _interface_port(interface, node)
+
+            if port in used_ports:
+                raise MininetAdapterError(
+                    f"Node '{node.id}' maps Interfaces "
+                    f"'{used_ports[port]}' and '{interface.id}' "
+                    f"to the same Mininet port {port}."
+                )
+
+            used_ports[port] = interface.id
 
 def _direction_params(direction: Any) -> dict[str, Any]:
     """Translate one V2 link direction into Mininet TCLink parameters."""
@@ -74,10 +90,10 @@ def _direction_params(direction: Any) -> dict[str, Any]:
 
 def _configure_host_interfaces(
     topology: Topology,
-    interface_index: dict[str, tuple[Any, Any]],
     net: Any,
+    materialized_interface_ids: set[str],
 ) -> None:
-    """Configure IPv4 and IPv6 addresses on Mininet Host interfaces."""
+    """Configure addresses only on materialized Mininet interfaces."""
     for node in topology.nodes.values():
         if node.node_type != NodeType.HOST:
             continue
@@ -85,12 +101,10 @@ def _configure_host_interfaces(
         host = net.get(node.id)
 
         for interface in node.interfaces:
-            if interface.status != InterfaceStatus.UP:
+            if interface.id not in materialized_interface_ids:
                 continue
 
             port = _interface_port(interface, node)
-
-            # Interface name used by Mininet.
             mininet_interface = f"{node.id}-eth{port}"
 
             for address in interface.ipv4_addresses:
@@ -154,6 +168,9 @@ def create_mininet_network(
     links = list(topology.links.values())
 
     interface_index = _build_interface_index(topology)
+    _validate_interface_ports(nodes)
+
+    materialized_interface_ids: set[str] = set()
 
     for node in nodes:
         if node.node_type not in (NodeType.HOST, NodeType.SWITCH):
@@ -204,10 +221,12 @@ def create_mininet_network(
 
         if link.forward.enabled != link.reverse.enabled:
             raise MininetAdapterError(
-                f"Link '{link.id}' has only one enabled direction. "
-                "This configuration is not supported by this adapter."
+                f"Link '{link.id}' has only one enabled direction."
             )
 
+        if link.forward.enabled and link.reverse.enabled:
+            materialized_interface_ids.add(link.source_interface_id)
+            materialized_interface_ids.add(link.destination_interface_id)
     net = Mininet(
         controller=None,
         switch=OVSSwitch,
@@ -268,7 +287,11 @@ def create_mininet_network(
 
         net.build()
 
-        _configure_host_interfaces(topology, interface_index, net)
+        _configure_host_interfaces(
+            topology,
+            net,
+            materialized_interface_ids,
+        )
 
         return net
 

@@ -97,6 +97,29 @@ def fake_api():
 def topology():
     return load_topology(DATASET)
 
+def _rebuild_topology(
+    topology,
+    *,
+    mutate_node=None,
+    mutate_link=None,
+):
+    from framework.core.topology.topology import Topology
+
+    modified = Topology(topology.metadata)
+
+    for node in topology.nodes.values():
+        if mutate_node is not None:
+            mutate_node(node)
+
+        modified.add_node(node)
+
+    for link in topology.links.values():
+        if mutate_link is not None:
+            mutate_link(link)
+
+        modified.add_link(link)
+
+    return modified
 
 def test_builds_n1_topology_and_does_not_start_it(topology, fake_api):
     net = create_mininet_network(
@@ -476,3 +499,180 @@ def test_stops_network_when_build_fails(topology):
             controller_ip="10.145.83.64",
             mininet_api=failing_api,
         )
+
+
+def test_rejects_switch_interface_port_collision(topology, fake_api):
+    from framework.core.topology.entities import Interface
+
+    def mutate_node(node):
+        if node.id == "s1":
+            node.interfaces.append(
+                Interface(
+                    id="s1-eth-extra",
+                    name="eth01",
+                )
+            )
+
+    modified = _rebuild_topology(
+        topology,
+        mutate_node=mutate_node,
+    )
+
+    with pytest.raises(
+        MininetAdapterError,
+        match="same Mininet port",
+    ):
+        create_mininet_network(
+            modified,
+            controller_ip="10.145.83.64",
+            mininet_api=fake_api,
+        )
+
+
+def test_rejects_host_interface_port_collision(topology, fake_api):
+    from framework.core.topology.entities import Interface
+
+    def mutate_node(node):
+        if node.id == "h1":
+            node.interfaces.append(
+                Interface(
+                    id="h1-eth-extra",
+                    name="eth00",
+                )
+            )
+
+    modified = _rebuild_topology(
+        topology,
+        mutate_node=mutate_node,
+    )
+
+    with pytest.raises(
+        MininetAdapterError,
+        match="same Mininet port",
+    ):
+        create_mininet_network(
+            modified,
+            controller_ip="10.145.83.64",
+            mininet_api=fake_api,
+        )
+
+
+def test_does_not_configure_unconnected_host_interface(
+    topology,
+    fake_api,
+):
+    from ipaddress import ip_interface
+
+    from framework.core.topology.entities import Interface
+
+    def mutate_node(node):
+        if node.id == "h1":
+            node.interfaces.append(
+                Interface(
+                    id="h1-eth-extra",
+                    name="eth1",
+                    ipv4_addresses=[
+                        ip_interface("10.10.10.1/24")
+                    ],
+                    ipv6_addresses=[
+                        ip_interface("2001:db8:10::1/64")
+                    ],
+                )
+            )
+
+    modified = _rebuild_topology(
+        topology,
+        mutate_node=mutate_node,
+    )
+
+    net = create_mininet_network(
+        modified,
+        controller_ip="10.145.83.64",
+        mininet_api=fake_api,
+    )
+
+    host = net.get("h1")
+
+    assert {
+        "ip": "10.10.10.1",
+        "prefixLen": 24,
+        "intf": "h1-eth1",
+    } not in host.ip_configurations
+
+    assert (
+        "ip -6 addr add 2001:db8:10::1/64 dev h1-eth1"
+        not in host.commands
+    )
+
+
+def test_does_not_configure_interface_with_inactive_link(
+    topology,
+    fake_api,
+):
+    from ipaddress import ip_interface
+
+    from framework.core.topology.enums import LinkStatus
+
+    first_link_id = next(iter(topology.links))
+
+    def mutate_node(node):
+        if node.id == "h1":
+            node.interfaces[0].ipv4_addresses = [
+                ip_interface("10.10.10.1/24")
+            ]
+
+    def mutate_link(link):
+        if link.id == first_link_id:
+            link.status = LinkStatus.FAILED
+
+    modified = _rebuild_topology(
+        topology,
+        mutate_node=mutate_node,
+        mutate_link=mutate_link,
+    )
+
+    net = create_mininet_network(
+        modified,
+        controller_ip="10.145.83.64",
+        mininet_api=fake_api,
+    )
+
+    host = net.get("h1")
+
+    assert host.ip_configurations == []
+
+
+def test_does_not_configure_interface_with_disabled_link(
+    topology,
+    fake_api,
+):
+    from ipaddress import ip_interface
+
+    first_link_id = next(iter(topology.links))
+
+    def mutate_node(node):
+        if node.id == "h1":
+            node.interfaces[0].ipv4_addresses = [
+                ip_interface("10.10.10.1/24")
+            ]
+
+    def mutate_link(link):
+        if link.id == first_link_id:
+            link.forward.enabled = False
+            link.reverse.enabled = False
+
+    modified = _rebuild_topology(
+        topology,
+        mutate_node=mutate_node,
+        mutate_link=mutate_link,
+    )
+
+    net = create_mininet_network(
+        modified,
+        controller_ip="10.145.83.64",
+        mininet_api=fake_api,
+    )
+
+    host = net.get("h1")
+
+    assert host.ip_configurations == []
