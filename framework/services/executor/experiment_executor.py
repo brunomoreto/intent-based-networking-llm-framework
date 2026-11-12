@@ -5,7 +5,6 @@ from time import perf_counter
 
 from framework.services.validator.path_validator import validate_path
 from framework.core.topology.serialization import load_topology
-from framework.core.topology.topology import Topology
 from framework.services.path_finder import find_path
 
 
@@ -31,33 +30,37 @@ def run_experiment(
 
     start_time = perf_counter()
 
+    # Load the original V2 topology.
     original_topology = load_topology(topology_path)
-    experiment_topology = Topology(original_topology.metadata)
 
-    for node in original_topology.nodes.values():
-        experiment_topology.add_node(node)
+    # Create an independent snapshot of the complete aggregate.
+    experiment_topology = original_topology.copy()
 
-    for link in original_topology.links.values():
-        experiment_topology.add_link(link)
-
+    # Ensure the failed link exists before simulating its failure.
     if not experiment_topology.has_link(failed_link_id):
         raise KeyError(
             f"Link '{failed_link_id}' does not exist in the topology."
         )
 
+    # Simulate the complete unavailability of the selected link.
     experiment_topology.remove_link(failed_link_id)
 
+    # Compute an alternative path.
     path_start_time = perf_counter()
+
     path = find_path(
         experiment_topology,
         source,
         destination,
     )
+
     path_computation_time_ms = (
         perf_counter() - path_start_time
     ) * 1000
 
+    # Independently validate the computed path.
     validation_start_time = perf_counter()
+
     success = validate_path(
         experiment_topology,
         path,
@@ -65,11 +68,14 @@ def run_experiment(
         destination=destination,
         failed_link_id=failed_link_id,
     )
+
     validation_time_ms = (
         perf_counter() - validation_start_time
     ) * 1000
 
-    execution_time_ms = (perf_counter() - start_time) * 1000
+    execution_time_ms = (
+        perf_counter() - start_time
+    ) * 1000
 
     return ExperimentResult(
         success=success,

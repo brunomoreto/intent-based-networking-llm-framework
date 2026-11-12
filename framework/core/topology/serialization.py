@@ -1,565 +1,423 @@
 
-"""
-Topology Domain - JSON Serialization
-
-This module provides JSON serialization and deserialization
-for network topology objects.
-"""
+"""JSON serialization and deserialization for Topology Model V2."""
 
 from __future__ import annotations
 
 import json
 from datetime import datetime
-from pathlib import Path
-from typing import Any
 
-from .enums import LinkStatus, NodeType, TopologySource
-from .exceptions import (
-    SerializationError,
-    TopologyFileError,
-    TopologyFormatError,
-    TopologyValidationError,
-    UnsupportedSchemaVersionError,
+from ipaddress import (
+    IPv4Interface,
+    IPv6Interface,
+    ip_address,
+    ip_network,
 )
-from .models import (
+from pathlib import Path
+from typing import Any, Mapping
+
+from .enums import (
+    AssociationRole,
+    ControllerStatus,
+    InterfaceStatus,
+    LinkStatus,
+    NodeType,
+    TopologySource,
+)
+from .entities import (
     Controller,
+    ControllerAssociation,
     Host,
+    Interface,
     Link,
+    LinkDirection,
     Metadata,
     Metrics,
-    Node,
+    NetworkElement,
     Policy,
     Router,
+    StaticRoute,
     Switch,
 )
 from .topology import Topology
-from .validator import validate_topology
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
-_ROOT_KEYS = {
-    "schema_version",
-    "metadata",
-    "nodes",
-    "links",
-    "policies",
-    "metrics",
-}
 
-_METADATA_KEYS = {
-    "id",
-    "name",
-    "description",
-    "author",
-    "version",
-    "created_at",
-    "topology_source",
-    "tags",
-}
-
-_NODE_KEYS = {
-    "id",
-    "name",
-    "node_type",
-    "attributes",
-    "properties",
-}
-
-_LINK_KEYS = {
-    "id",
-    "source",
-    "destination",
-    "bandwidth",
-    "delay",
-    "weight",
-    "packet_loss",
-    "status",
-    "bidirectional",
-    "attributes",
-}
-
-_POLICY_KEYS = {
-    "id",
-    "name",
-    "description",
-    "enabled",
-    "attributes",
-}
-
-_METRICS_KEYS = {"values"}
-
-_NODE_CLASSES = {
-    NodeType.SWITCH: Switch,
-    NodeType.HOST: Host,
-    NodeType.ROUTER: Router,
-    NodeType.CONTROLLER: Controller,
-}
-
-
-def _require_object(value: Any, location: str) -> dict[str, Any]:
-    if not isinstance(value, dict):
-        raise TopologyFormatError(
-            f"'{location}' must be a JSON object."
-        )
-    return value
-
-
-def _check_keys(
-    data: dict[str, Any],
-    allowed: set[str],
-    required: set[str],
-    location: str,
-) -> None:
-    unknown = set(data) - allowed
-    if unknown:
-        names = ", ".join(sorted(unknown))
-        raise TopologyFormatError(
-            f"Unknown field(s) in '{location}': {names}."
-        )
-
-    missing = required - set(data)
-    if missing:
-        names = ", ".join(sorted(missing))
-        raise TopologyFormatError(
-            f"Missing required field(s) in '{location}': {names}."
-        )
-
-
-def _require_string(value: Any, location: str) -> str:
-    if not isinstance(value, str):
-        raise TopologyFormatError(
-            f"'{location}' must be a string."
-        )
-    return value
-
-
-def _require_mapping(
-    value: Any,
-    location: str,
-) -> dict[str, Any]:
-    data = _require_object(value, location)
-
-    if not all(isinstance(key, str) for key in data):
-        raise TopologyFormatError(
-            f"All keys in '{location}' must be strings."
-        )
-
-    return data
-
-
-def _require_boolean(value: Any, location: str) -> bool:
-    if not isinstance(value, bool):
-        raise TopologyFormatError(
-            f"'{location}' must be a boolean."
-        )
-    return value
-
-
-def _require_number(value: Any, location: str) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise TopologyFormatError(
-            f"'{location}' must be a number."
-        )
-
-    return float(value)
-
-
-def _require_list(value: Any, location: str) -> list[Any]:
-    if not isinstance(value, list):
-        raise TopologyFormatError(
-            f"'{location}' must be a JSON array."
-        )
-    return value
-
-
-def _parse_enum(enum_class: Any, value: Any, location: str) -> Any:
-    if not isinstance(value, str):
-        raise TopologyFormatError(
-            f"'{location}' must be a string."
-        )
-
-    try:
-        return enum_class(value)
-    except ValueError:
-        raise TopologyFormatError(
-            f"Invalid value '{value}' for '{location}'."
-        ) from None
-
-
-def _parse_metadata(data: Any) -> Metadata:
-    data = _require_object(data, "metadata")
-
-    _check_keys(
-        data,
-        _METADATA_KEYS,
-        {"id", "name"},
-        "metadata",
-    )
-
-    created_at = data.get("created_at")
-    if created_at is not None:
-        if not isinstance(created_at, str):
-            raise TopologyFormatError(
-                "'metadata.created_at' must be an ISO 8601 string or null."
-            )
-        try:
-            created_at = datetime.fromisoformat(created_at)
-        except ValueError:
-            raise TopologyFormatError(
-                "'metadata.created_at' is not a valid ISO 8601 timestamp."
-            ) from None
-
-    tags = _require_list(data.get("tags", []), "metadata.tags")
-    if not all(isinstance(tag, str) for tag in tags):
-        raise TopologyFormatError(
-            "Every item in 'metadata.tags' must be a string."
-        )
-
-    return Metadata(
-        id=_require_string(data["id"], "metadata.id"),
-        name=_require_string(data["name"], "metadata.name"),
-        description=_require_string(
-            data.get("description", ""),
-            "metadata.description",
-        ),
-        author=_require_string(
-            data.get("author", ""),
-            "metadata.author",
-        ),
-        version=_require_string(
-            data.get("version", "1.0"),
-            "metadata.version",
-        ),
-        created_at=created_at,
-        topology_source=_parse_enum(
-            TopologySource,
-            data.get("topology_source", TopologySource.CUSTOM.value),
-            "metadata.topology_source",
-        ),
-        tags=tags,
-    )
-
-
-def _parse_node(data: Any) -> Node:
-    data = _require_object(data, "node")
-
-    _check_keys(
-        data,
-        _NODE_KEYS,
-        {"id", "name", "node_type"},
-        "node",
-    )
-
-    node_type = _parse_enum(
-        NodeType,
-        data["node_type"],
-        "node.node_type",
-    )
-
-    node_class = _NODE_CLASSES[node_type]
-
-    return node_class(
-        id=_require_string(data["id"], "node.id"),
-        name=_require_string(data["name"], "node.name"),
-        attributes=_require_mapping(
-            data.get("attributes", {}),
-            "node.attributes",
-        ),
-        properties=_require_mapping(
-            data.get("properties", {}),
-            "node.properties",
-        ),
-    )
-
-
-def _parse_link(data: Any) -> Link:
-    data = _require_object(data, "link")
-
-    _check_keys(
-        data,
-        _LINK_KEYS,
-        {"id", "source", "destination"},
-        "link",
-    )
-
-    return Link(
-        id=_require_string(data["id"], "link.id"),
-        source=_require_string(data["source"], "link.source"),
-        destination=_require_string(
-            data["destination"],
-            "link.destination",
-        ),
-        bandwidth=_require_number(
-            data.get("bandwidth", 0.0),
-            "link.bandwidth",
-        ),
-        delay=_require_number(
-            data.get("delay", 0.0),
-            "link.delay",
-        ),
-        weight=_require_number(
-            data.get("weight", 1.0),
-            "link.weight",
-        ),
-        packet_loss=_require_number(
-            data.get("packet_loss", 0.0),
-            "link.packet_loss",
-        ),
-        status=_parse_enum(
-            LinkStatus,
-            data.get("status", LinkStatus.ACTIVE.value),
-            "link.status",
-        ),
-        bidirectional=_require_boolean(
-            data.get("bidirectional", True),
-            "link.bidirectional",
-        ),
-        attributes=_require_mapping(
-            data.get("attributes", {}),
-            "link.attributes",
-        ),
-    )
-
-
-def _parse_policy(data: Any) -> Policy:
-    data = _require_object(data, "policy")
-
-    _check_keys(
-        data,
-        _POLICY_KEYS,
-        {"id", "name"},
-        "policy",
-    )
-
-    return Policy(
-        id=_require_string(data["id"], "policy.id"),
-        name=_require_string(data["name"], "policy.name"),
-        description=_require_string(
-            data.get("description", ""),
-            "policy.description",
-        ),
-        enabled=_require_boolean(
-            data.get("enabled", True),
-            "policy.enabled",
-        ),
-        attributes=_require_mapping(
-            data.get("attributes", {}),
-            "policy.attributes",
-        ),
-    )
-
-
-def _parse_metrics(data: Any) -> Metrics:
-    data = _require_object(data, "metrics")
-
-    _check_keys(
-        data,
-        _METRICS_KEYS,
-        {"values"},
-        "metrics",
-    )
-
-    values = _require_mapping(data["values"], "metrics.values")
-
-    parsed_values = {
-        key: _require_number(value, f"metrics.values.{key}")
-        for key, value in values.items()
-    }
-
-    return Metrics(values=parsed_values)
-
-
-def load_topology(path: str | Path) -> Topology:
-    """
-    Load a topology from a JSON file.
-
-    Raises:
-        TopologyFileError: If the file cannot be read.
-        TopologyFormatError: If the JSON or its structure is invalid.
-        UnsupportedSchemaVersionError: If the schema version is unsupported.
-        TopologyValidationError: If the topology is structurally invalid.
-    """
-    file_path = Path(path)
-
-    try:
-        with file_path.open("r", encoding="utf-8") as file:
-            document = json.load(file)
-    except OSError as exc:
-        raise TopologyFileError(
-            f"Could not read topology file '{file_path}': {exc}"
-        ) from exc
-    except json.JSONDecodeError as exc:
-        raise TopologyFormatError(
-            f"Invalid JSON in '{file_path}' at line {exc.lineno}, "
-            f"column {exc.colno}: {exc.msg}"
-        ) from exc
-
-    document = _require_object(document, "root")
-
-    _check_keys(
-        document,
-        _ROOT_KEYS,
-        {"schema_version", "metadata", "nodes", "links"},
-        "root",
-    )
-
-    schema_version = document["schema_version"]
-    if (
-        isinstance(schema_version, bool)
-        or not isinstance(schema_version, int)
-    ):
-        raise TopologyFormatError(
-            "'schema_version' must be an integer."
-        )
-
-    if schema_version != SCHEMA_VERSION:
-        raise UnsupportedSchemaVersionError(
-            f"Unsupported schema version '{schema_version}'. "
-            f"Supported version: {SCHEMA_VERSION}."
-        )
-
-    metadata = _parse_metadata(document["metadata"])
-    topology = Topology(metadata)
-
-    nodes = _require_list(document["nodes"], "nodes")
-    links = _require_list(document["links"], "links")
-    policies = _require_list(document.get("policies", []), "policies")
-
-    try:
-        for item in nodes:
-            topology.add_node(_parse_node(item))
-
-        for item in links:
-            topology.add_link(_parse_link(item))
-
-        for item in policies:
-            topology.add_policy(_parse_policy(item))
-
-        if "metrics" in document:
-            topology.set_metrics(_parse_metrics(document["metrics"]))
-
-        validate_topology(topology)
-
-    except (TypeError, ValueError, KeyError) as exc:
-        raise TopologyFormatError(
-            f"Invalid topology structure: {exc}"
-        ) from exc
-
-    return topology
-
-
-def _metadata_to_dict(metadata: Metadata) -> dict[str, Any]:
+def _serialize_direction(direction: LinkDirection) -> dict[str, Any]:
     return {
-        "id": metadata.id,
-        "name": metadata.name,
-        "description": metadata.description,
-        "author": metadata.author,
-        "version": metadata.version,
-        "created_at": (
-            metadata.created_at.isoformat()
-            if metadata.created_at is not None
-            else None
-        ),
-        "topology_source": metadata.topology_source.value,
-        "tags": metadata.tags,
+        "bandwidth": direction.bandwidth,
+        "delay": direction.delay,
+        "weight": direction.weight,
+        "packet_loss": direction.packet_loss,
+        "enabled": direction.enabled,
     }
 
 
-def _node_to_dict(node: Node) -> dict[str, Any]:
+def _serialize_interface(interface: Interface) -> dict[str, Any]:
     return {
+        "id": interface.id,
+        "name": interface.name,
+        "mac_address": interface.mac_address,
+        "ipv4_addresses": [
+            str(address) for address in interface.ipv4_addresses
+        ],
+        "ipv6_addresses": [
+            str(address) for address in interface.ipv6_addresses
+        ],
+        "mtu": interface.mtu,
+        "speed": interface.speed,
+        "status": interface.status.value,
+        "attributes": interface.attributes,
+    }
+
+
+def _serialize_static_route(route: StaticRoute) -> dict[str, Any]:
+    return {
+        "id": route.id,
+        "destination": str(route.destination),
+        "next_hop": (
+            str(route.next_hop) if route.next_hop is not None else None
+        ),
+        "outgoing_interface_id": route.outgoing_interface_id,
+        "metric": route.metric,
+    }
+
+
+def _serialize_node(node: NetworkElement) -> dict[str, Any]:
+    data: dict[str, Any] = {
         "id": node.id,
         "name": node.name,
         "node_type": node.node_type.value,
         "attributes": node.attributes,
-        "properties": node.properties,
+        "interfaces": [
+            _serialize_interface(interface)
+            for interface in node.interfaces
+        ],
     }
 
+    if isinstance(node, Router):
+        data.update({
+            "ipv4_forwarding": node.ipv4_forwarding,
+            "ipv6_forwarding": node.ipv6_forwarding,
+            "static_routes": [
+                _serialize_static_route(route)
+                for route in node.static_routes
+            ],
+        })
 
-def _link_to_dict(link: Link) -> dict[str, Any]:
+    return data
+
+
+def serialize_topology(topology: Topology) -> dict[str, Any]:
+    """Convert a Topology aggregate into a JSON-compatible dictionary."""
+
+    metadata = topology.metadata
+    metrics = topology.metrics
+
     return {
-        "id": link.id,
-        "source": link.source,
-        "destination": link.destination,
-        "bandwidth": link.bandwidth,
-        "delay": link.delay,
-        "weight": link.weight,
-        "packet_loss": link.packet_loss,
-        "status": link.status.value,
-        "bidirectional": link.bidirectional,
-        "attributes": link.attributes,
-    }
-
-
-def _policy_to_dict(policy: Policy) -> dict[str, Any]:
-    return {
-        "id": policy.id,
-        "name": policy.name,
-        "description": policy.description,
-        "enabled": policy.enabled,
-        "attributes": policy.attributes,
-    }
-
-
-def save_topology(topology: Topology, path: str | Path) -> None:
-    """
-    Save a topology to a JSON file.
-
-    Raises:
-        TypeError: If the supplied object is not a Topology.
-        TopologyFileError: If the file cannot be written.
-        SerializationError: If the topology cannot be represented as JSON.
-        TopologyValidationError: If the topology is structurally invalid.
-    """
-    if not isinstance(topology, Topology):
-        raise TypeError("topology must be an instance of Topology.")
-
-    validate_topology(topology)
-
-    document = {
         "schema_version": SCHEMA_VERSION,
-        "metadata": _metadata_to_dict(topology.metadata),
+        "metadata": {
+            "id": metadata.id,
+            "name": metadata.name,
+            "description": metadata.description,
+            "author": metadata.author,
+            "version": metadata.version,
+            "created_at": (
+                metadata.created_at.isoformat()
+                if metadata.created_at is not None
+                else None
+            ),
+            "topology_source": metadata.topology_source.value,
+            "tags": list(metadata.tags),
+        },
         "nodes": [
-            _node_to_dict(node)
+            _serialize_node(node)
             for node in topology.nodes.values()
         ],
         "links": [
-            _link_to_dict(link)
+            {
+                "id": link.id,
+                "source_interface_id": link.source_interface_id,
+                "destination_interface_id": link.destination_interface_id,
+                "forward": _serialize_direction(link.forward),
+                "reverse": (
+                    _serialize_direction(link.reverse)
+                    if link.reverse is not None
+                    else None
+                ),
+                "status": link.status.value,
+                "attributes": link.attributes,
+            }
             for link in topology.links.values()
         ],
+        "controllers": [
+            {
+                "id": controller.id,
+                "name": controller.name,
+                "controller_type": controller.controller_type,
+                "endpoint": controller.endpoint,
+                "port": controller.port,
+                "protocol": controller.protocol,
+                "status": controller.status.value,
+                "attributes": controller.attributes,
+            }
+            for controller in topology.controllers.values()
+        ],
+        "controller_associations": [
+            {
+                "id": association.id,
+                "controller_id": association.controller_id,
+                "node_id": association.node_id,
+                "role": (
+                    association.role.value
+                    if association.role is not None
+                    else None
+                ),
+            }
+            for association in topology.controller_associations.values()
+        ],
         "policies": [
-            _policy_to_dict(policy)
+            {
+                "id": policy.id,
+                "name": policy.name,
+                "description": policy.description,
+                "enabled": policy.enabled,
+                "attributes": policy.attributes,
+            }
             for policy in topology.policies.values()
         ],
         "metrics": {
-            "values": topology.metrics.values,
+            "values": dict(metrics.values),
         },
     }
 
-    file_path = Path(path)
 
-    try:
-        with file_path.open("w", encoding="utf-8") as file:
-            json.dump(
-                document,
-                file,
-                indent=2,
-                ensure_ascii=False,
-                allow_nan=False,
-            )
-            file.write("\n")
-    except OSError as exc:
-        raise TopologyFileError(
-            f"Could not write topology file '{file_path}': {exc}"
-        ) from exc
-    except (TypeError, ValueError) as exc:
-        raise SerializationError(
-            f"Could not serialize topology: {exc}"
-        ) from exc
+def _deserialize_interface(data: Mapping[str, Any]) -> Interface:
+    return Interface(
+        id=data["id"],
+        name=data["name"],
+        mac_address=data.get("mac_address"),
+        ipv4_addresses=[
+            IPv4Interface(address)
+            for address in data.get("ipv4_addresses", [])
+        ],
+        ipv6_addresses=[
+            IPv6Interface(address)
+            for address in data.get("ipv6_addresses", [])
+        ],
+        mtu=data.get("mtu"),
+        speed=data.get("speed"),
+        status=InterfaceStatus(data.get("status", "up")),
+        attributes=dict(data.get("attributes", {})),
+    )
+
+
+
+def _deserialize_static_route(data: Mapping[str, Any]) -> StaticRoute:
+    destination = ip_network(data["destination"], strict=False)
+    next_hop_data = data.get("next_hop")
+
+    return StaticRoute(
+        id=data["id"],
+        destination=destination,
+        next_hop=(
+            ip_address(next_hop_data)
+            if next_hop_data is not None
+            else None
+        ),
+        outgoing_interface_id=data.get("outgoing_interface_id"),
+        metric=data.get("metric", 0),
+    )
+
+
+def _deserialize_node(data: Mapping[str, Any]) -> NetworkElement:
+    node_type = NodeType(data["node_type"])
+
+    common = {
+        "id": data["id"],
+        "name": data["name"],
+        "attributes": dict(data.get("attributes", {})),
+        "interfaces": [
+            _deserialize_interface(interface)
+            for interface in data.get("interfaces", [])
+        ],
+    }
+
+    if node_type is NodeType.HOST:
+        return Host(**common)
+
+    if node_type is NodeType.SWITCH:
+        return Switch(**common)
+
+    if node_type is NodeType.ROUTER:
+        return Router(
+            **common,
+            ipv4_forwarding=data.get("ipv4_forwarding", False),
+            ipv6_forwarding=data.get("ipv6_forwarding", False),
+            static_routes=[
+                _deserialize_static_route(route)
+                for route in data.get("static_routes", [])
+            ],
+        )
+
+    raise ValueError(f"Unsupported node type: {node_type}")
+
+
+def _deserialize_direction(data: Mapping[str, Any]) -> LinkDirection:
+    return LinkDirection(
+        bandwidth=data["bandwidth"],
+        delay=data["delay"],
+        weight=data["weight"],
+        packet_loss=data["packet_loss"],
+        enabled=data["enabled"],
+    )
+
+
+def deserialize_topology(document: Mapping[str, Any]) -> Topology:
+    """Reconstruct a Topology aggregate from a decoded V2 document."""
+
+    if document.get("schema_version") != SCHEMA_VERSION:
+        raise ValueError(
+            "Unsupported topology schema version: "
+            f"{document.get('schema_version')!r}. "
+            f"Expected version {SCHEMA_VERSION}."
+        )
+
+    metadata_data = document["metadata"]
+    created_at_data = metadata_data.get("created_at")
+
+    metadata = Metadata(
+        id=metadata_data["id"],
+        name=metadata_data["name"],
+        description=metadata_data.get("description", ""),
+        author=metadata_data.get("author", ""),
+        version=metadata_data.get("version", "1.0"),
+        created_at=(
+            datetime.fromisoformat(created_at_data)
+            if created_at_data is not None
+            else None
+        ),
+        topology_source=TopologySource(
+            metadata_data.get("topology_source", "custom")
+        ),
+        tags=list(metadata_data.get("tags", [])),
+    )
+
+    topology = Topology(metadata=metadata)
+
+    for node_data in document.get("nodes", []):
+        topology.add_node(_deserialize_node(node_data))
+
+    for link_data in document.get("links", []):
+        reverse_data = link_data.get("reverse")
+
+        link = Link(
+            id=link_data["id"],
+            source_interface_id=link_data["source_interface_id"],
+            destination_interface_id=link_data["destination_interface_id"],
+            forward=_deserialize_direction(link_data["forward"]),
+            reverse=(
+                _deserialize_direction(reverse_data)
+                if reverse_data is not None
+                else None
+            ),
+            status=LinkStatus(link_data.get("status", "active")),
+            attributes=dict(link_data.get("attributes", {})),
+        )
+        topology.add_link(link)
+
+    for controller_data in document.get("controllers", []):
+        controller = Controller(
+            id=controller_data["id"],
+            name=controller_data["name"],
+            controller_type=controller_data["controller_type"],
+            endpoint=controller_data["endpoint"],
+            port=controller_data["port"],
+            protocol=controller_data["protocol"],
+            status=ControllerStatus(
+                controller_data.get("status", "unknown")
+            ),
+            attributes=dict(controller_data.get("attributes", {})),
+        )
+        topology.add_controller(controller)
+
+    for association_data in document.get(
+        "controller_associations", []
+    ):
+        role_data = association_data.get("role")
+
+        association = ControllerAssociation(
+            id=association_data["id"],
+            controller_id=association_data["controller_id"],
+            node_id=association_data["node_id"],
+            role=(
+                AssociationRole(role_data)
+                if role_data is not None
+                else None
+            ),
+        )
+        topology.add_controller_association(association)
+
+    for policy_data in document.get("policies", []):
+        policy = Policy(
+            id=policy_data["id"],
+            name=policy_data["name"],
+            description=policy_data.get("description", ""),
+            enabled=policy_data.get("enabled", True),
+            attributes=dict(policy_data.get("attributes", {})),
+        )
+        topology.add_policy(policy)
+
+    metrics_data = document.get("metrics", {})
+    topology.set_metrics(
+        Metrics(values=dict(metrics_data.get("values", {})))
+    )
+
+    return topology
+
+
+def save_topology(
+    topology: Topology,
+    path: str | Path,
+    *,
+    indent: int = 2,
+) -> None:
+    """Serialize a topology and save it as a UTF-8 JSON file."""
+
+    document = serialize_topology(topology)
+    destination = Path(path)
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    with destination.open("w", encoding="utf-8") as file:
+        json.dump(
+            document,
+            file,
+            indent=indent,
+            ensure_ascii=False,
+        )
+        file.write("\n")
+
+
+def load_topology(path: str | Path) -> Topology:
+    """Load a V2 JSON file and reconstruct its Topology aggregate."""
+
+    source = Path(path)
+
+    with source.open("r", encoding="utf-8") as file:
+        document = json.load(file)
+
+    if not isinstance(document, dict):
+        raise ValueError("Topology JSON root must be an object.")
+
+    return deserialize_topology(document)
 
 
 __all__ = [
     "SCHEMA_VERSION",
-    "load_topology",
+    "serialize_topology",
+    "deserialize_topology",
     "save_topology",
+    "load_topology",
 ]

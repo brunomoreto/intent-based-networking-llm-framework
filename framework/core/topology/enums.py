@@ -1,10 +1,12 @@
+
 """
 Topology Domain - Enumerations
 
-This module defines the enumerations used by the Topology Domain.
+This module defines the enumerations used throughout
+the Topology V2 domain.
 
-Enumerations represent finite sets of valid values shared across the
-framework.
+Enum values are represented as lowercase strings to ensure
+consistency with the JSON V2 serialization contract.
 
 This module intentionally contains no business logic.
 """
@@ -13,42 +15,66 @@ from enum import StrEnum
 
 
 # =============================================================================
-# Nodes
+# Network Node Types
 # =============================================================================
 
 class NodeType(StrEnum):
-    """Supported network node types."""
-
-    SWITCH = "switch"
     HOST = "host"
+    SWITCH = "switch"
     ROUTER = "router"
-    CONTROLLER = "controller"
 
 
 # =============================================================================
-# Links
+# Link Status
 # =============================================================================
 
 class LinkStatus(StrEnum):
-    """Current status of a network link."""
-
     ACTIVE = "active"
     FAILED = "failed"
     DISABLED = "disabled"
 
 
 # =============================================================================
-# Topology Sources
+# Interface Status
+# =============================================================================
+
+class InterfaceStatus(StrEnum):
+    UP = "up"
+    DOWN = "down"
+    DISABLED = "disabled"
+
+
+# =============================================================================
+# Controller Status
+# =============================================================================
+
+class ControllerStatus(StrEnum):
+    UNKNOWN = "unknown"
+    ACTIVE = "active"
+    DEGRADED = "degraded"
+    UNAVAILABLE = "unavailable"
+
+
+# =============================================================================
+# Controller Association Roles
+# =============================================================================
+
+class AssociationRole(StrEnum):
+    MASTER = "master"
+    STANDBY = "standby"
+    EQUAL = "equal"
+
+
+# =============================================================================
+# Topology Source
 # =============================================================================
 
 class TopologySource(StrEnum):
-    """Origin or provenance of a topology."""
-
     CUSTOM = "custom"
     REFERENCE = "reference"
     SYNTHETIC = "synthetic"
     PRODUCTION = "production"
-    
+
 
 # =============================================================================
 # Public API
@@ -57,5 +83,8 @@ class TopologySource(StrEnum):
 __all__ = [
     "NodeType",
     "LinkStatus",
+    "InterfaceStatus",
+    "ControllerStatus",
+    "AssociationRole",
     "TopologySource",
 ]

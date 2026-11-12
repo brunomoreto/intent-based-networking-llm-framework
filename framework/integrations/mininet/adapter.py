@@ -1,16 +1,111 @@
 
-"""Adapter that translates a framework Topology into a Mininet network."""
+"""Adapter that translates a V2 Topology into a Mininet network."""
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
-from framework.core.topology.enums import LinkStatus, NodeType
+from framework.core.topology.enums import (
+    InterfaceStatus,
+    LinkStatus,
+    NodeType,
+)
 from framework.core.topology.topology import Topology
 
 
 class MininetAdapterError(ValueError):
     """Raised when a topology cannot be represented by this adapter."""
+
+
+_INTERFACE_PATTERN = re.compile(r"^eth(\d+)$")
+
+
+def _interface_port(interface: Any, node: Any) -> int:
+    """Translate a V2 interface name into a Mininet port number."""
+    match = _INTERFACE_PATTERN.fullmatch(interface.name)
+
+    if match is None:
+        raise MininetAdapterError(
+            f"Interface '{interface.id}' has unsupported name "
+            f"'{interface.name}'. Expected ethN."
+        )
+
+    logical_port = int(match.group(1))
+
+    # Open vSwitch reserves port 0 for its local interface.
+    if node.node_type == NodeType.SWITCH:
+        return logical_port + 1
+
+    return logical_port
+
+
+def _build_interface_index(topology: Topology) -> dict[str, tuple[Any, Any]]:
+    """Map each Interface ID to its owning Node and Interface."""
+    index: dict[str, tuple[Any, Any]] = {}
+
+    for node in topology.nodes.values():
+        for interface in node.interfaces:
+            if interface.id in index:
+                raise MininetAdapterError(
+                    f"Duplicate interface ID '{interface.id}'."
+                )
+
+            index[interface.id] = (node, interface)
+
+    return index
+
+
+def _direction_params(direction: Any) -> dict[str, Any]:
+    """Translate one V2 link direction into Mininet TCLink parameters."""
+    params: dict[str, Any] = {
+        "bw": direction.bandwidth,
+    }
+
+    if direction.delay > 0:
+        params["delay"] = f"{direction.delay}ms"
+
+    if direction.packet_loss > 0:
+        params["loss"] = direction.packet_loss
+
+    return params
+
+
+
+def _configure_host_interfaces(
+    topology: Topology,
+    interface_index: dict[str, tuple[Any, Any]],
+    net: Any,
+) -> None:
+    """Configure IPv4 and IPv6 addresses on Mininet Host interfaces."""
+    for node in topology.nodes.values():
+        if node.node_type != NodeType.HOST:
+            continue
+
+        host = net.get(node.id)
+
+        for interface in node.interfaces:
+            if interface.status != InterfaceStatus.UP:
+                continue
+
+            port = _interface_port(interface, node)
+
+            # Interface name used by Mininet.
+            mininet_interface = f"{node.id}-eth{port}"
+
+            for address in interface.ipv4_addresses:
+                host.setIP(
+                    ip=str(address.ip),
+                    prefixLen=address.network.prefixlen,
+                    intf=mininet_interface,
+                )
+
+            for address in interface.ipv6_addresses:
+                host.cmd(
+                    "ip -6 addr add "
+                    f"{address} dev {mininet_interface}"
+                )
+
 
 
 def create_mininet_network(
@@ -22,18 +117,13 @@ def create_mininet_network(
 ) -> Any:
     """Build a Mininet network without starting it.
 
-    Assumptions for link parameters:
-    - bandwidth is expressed in Mbps;
-    - delay is expressed in milliseconds;
-    - packet_loss is expressed as a percentage.
-
-    Only active links are created. The caller is responsible for starting,
-    testing and stopping the returned network.
+    V2 link directions are mapped independently to TCLink params1/params2.
+    Link weight is intentionally not mapped to a traffic-control parameter.
     """
     if not isinstance(topology, Topology):
         raise TypeError("topology must be a Topology instance.")
 
-    if not controller_ip or not controller_ip.strip():
+    if not isinstance(controller_ip, str) or not controller_ip.strip():
         raise ValueError("controller_ip must not be empty.")
 
     if isinstance(controller_port, bool) or not isinstance(
@@ -44,8 +134,6 @@ def create_mininet_network(
     if not 1 <= controller_port <= 65535:
         raise ValueError("controller_port must be between 1 and 65535.")
 
-    # Lazy import allows the framework and its unit tests to run on systems
-    # where Mininet is not installed, such as the Windows development host.
     if mininet_api is None:
         try:
             from mininet.net import Mininet
@@ -65,37 +153,60 @@ def create_mininet_network(
     nodes = list(topology.nodes.values())
     links = list(topology.links.values())
 
-    # Validate supported node and link types before creating the network.
+    interface_index = _build_interface_index(topology)
+
     for node in nodes:
         if node.node_type not in (NodeType.HOST, NodeType.SWITCH):
             raise MininetAdapterError(
                 f"Unsupported node type '{node.node_type.value}' "
-                f"for node '{node.id}'. This adapter supports hosts "
-                "and switches only."
+                f"for node '{node.id}'. Only hosts and switches "
+                "are supported."
             )
+
+        for interface in node.interfaces:
+            _interface_port(interface, node)
 
     for link in links:
-        if not link.bidirectional:
+        if link.status != LinkStatus.ACTIVE:
+            continue
+
+        source_entry = interface_index.get(link.source_interface_id)
+        destination_entry = interface_index.get(
+            link.destination_interface_id
+        )
+
+        if source_entry is None or destination_entry is None:
             raise MininetAdapterError(
-                f"Link '{link.id}' is unidirectional. Mininet's ordinary "
-                "point-to-point link model is bidirectional."
+                f"Link '{link.id}' references an unknown interface."
             )
 
-        if link.status == LinkStatus.ACTIVE:
-            for field, value in (
-                ("bandwidth", link.bandwidth),
-                ("delay", link.delay),
-                ("packet_loss", link.packet_loss),
-            ):
-                if value < 0:
-                    raise MininetAdapterError(
-                        f"Link '{link.id}' has negative {field}: {value}."
-                    )
+        source_node, source_interface = source_entry
+        destination_node, destination_interface = destination_entry
 
-            if link.packet_loss > 100:
-                raise MininetAdapterError(
-                    f"Link '{link.id}' packet_loss must not exceed 100."
-                )
+        if source_node.id == destination_node.id:
+            raise MininetAdapterError(
+                f"Link '{link.id}' connects interfaces belonging "
+                "to the same node."
+            )
+
+        if (
+            source_interface.status != InterfaceStatus.UP
+            or destination_interface.status != InterfaceStatus.UP
+        ):
+            continue
+
+        if link.reverse is None:
+            raise MininetAdapterError(
+                f"Link '{link.id}' has no declared reverse direction. "
+                "Mininet TCLink cannot represent this configuration "
+                "faithfully."
+            )
+
+        if link.forward.enabled != link.reverse.enabled:
+            raise MininetAdapterError(
+                f"Link '{link.id}' has only one enabled direction. "
+                "This configuration is not supported by this adapter."
+            )
 
     net = Mininet(
         controller=None,
@@ -108,13 +219,7 @@ def create_mininet_network(
     try:
         for node in nodes:
             if node.node_type == NodeType.HOST:
-                host_options: dict[str, Any] = {}
-
-                ip_address = node.properties.get("ip")
-                if ip_address:
-                    host_options["ip"] = ip_address
-
-                net.addHost(node.id, **host_options)
+                net.addHost(node.id)
 
             elif node.node_type == NodeType.SWITCH:
                 net.addSwitch(node.id, protocols="OpenFlow13")
@@ -130,28 +235,44 @@ def create_mininet_network(
             if link.status != LinkStatus.ACTIVE:
                 continue
 
-            link_options: dict[str, Any] = {}
+            source_node, source_interface = interface_index[
+                link.source_interface_id
+            ]
+            destination_node, destination_interface = interface_index[
+                link.destination_interface_id
+            ]
 
-            if link.bandwidth > 0:
-                link_options["bw"] = link.bandwidth
+            if (
+                source_interface.status != InterfaceStatus.UP
+                or destination_interface.status != InterfaceStatus.UP
+            ):
+                continue
 
-            if link.delay > 0:
-                link_options["delay"] = f"{link.delay}ms"
+            if not link.forward.enabled and not link.reverse.enabled:
+                continue
 
-            if link.packet_loss > 0:
-                link_options["loss"] = link.packet_loss
+            source_port = _interface_port(source_interface, source_node)
+            destination_port = _interface_port(
+                destination_interface,
+                destination_node,
+            )
 
             net.addLink(
-                link.source,
-                link.destination,
-                **link_options,
+                source_node.id,
+                destination_node.id,
+                port1=source_port,
+                port2=destination_port,
+                params1=_direction_params(link.forward),
+                params2=_direction_params(link.reverse),
             )
 
         net.build()
+
+        _configure_host_interfaces(topology, interface_index, net)
+
         return net
 
     except Exception:
-        # Best-effort cleanup if construction fails.
         try:
             net.stop()
         except Exception:

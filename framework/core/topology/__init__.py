@@ -1,70 +1,114 @@
+
 """
-Topology Domain
+Topology Domain - Public API
 
-Technology-independent representation of communication networks.
-
-This package provides the canonical domain model used throughout the
-Intent-Based Networking LLM Framework.
-
-The Topology Domain is independent of controllers, emulators,
-knowledge graphs, databases and Large Language Models.
+This package exposes the public interface of the Topology V2 domain.
 """
-
-# =============================================================================
-# Enumerations
-# =============================================================================
+from .topology import Topology
 
 from .enums import (
-    LinkStatus,
     NodeType,
+    LinkStatus,
+    InterfaceStatus,
+    ControllerStatus,
+    AssociationRole,
     TopologySource,
 )
 
-# =============================================================================
-# Domain Entities
-# =============================================================================
+from .types import (
+    TopologyId,
+    NodeId,
+    InterfaceId,
+    LinkId,
+    ControllerId,
+    RouteId,
+    AssociationId,
+    PolicyId,
+    Attributes,
+    Tags,
+    Timestamp,
+    Bandwidth,
+    Delay,
+    PacketLoss,
+    Weight,
+    MetricValue,
+    MetricValues,
+)
 
-from .models import (
+from .entities import (
     Metadata,
+    Interface,
     NetworkElement,
     Node,
-    Switch,
     Host,
+    Switch,
     Router,
-    Controller,
+    StaticRoute,
+    LinkDirection,
     Link,
+    Controller,
+    ControllerAssociation,
     Policy,
     Metrics,
 )
 
-# =============================================================================
-# Aggregate Root
-# =============================================================================
-
-from .topology import Topology
-
-# =============================================================================
-# Public API
-# =============================================================================
+from .serialization import (
+    SCHEMA_VERSION,
+    serialize_topology,
+    deserialize_topology,
+    save_topology,
+    load_topology,
+)
 
 __all__ = [
     # Enumerations
     "NodeType",
     "LinkStatus",
+    "InterfaceStatus",
+    "ControllerStatus",
+    "AssociationRole",
     "TopologySource",
 
-    # Domain Model
+    # Types
+    "TopologyId",
+    "NodeId",
+    "InterfaceId",
+    "LinkId",
+    "ControllerId",
+    "RouteId",
+    "AssociationId",
+    "PolicyId",
+    "Attributes",
+    "Tags",
+    "Timestamp",
+    "Bandwidth",
+    "Delay",
+    "PacketLoss",
+    "Weight",
+    "MetricValue",
+    "MetricValues",
+
+    # Entities
     "Metadata",
+    "Interface",
     "NetworkElement",
     "Node",
-    "Switch",
     "Host",
+    "Switch",
     "Router",
-    "Controller",
+    "StaticRoute",
+    "LinkDirection",
     "Link",
+    "Controller",
+    "ControllerAssociation",
     "Policy",
     "Metrics",
-
-    # Aggregate Root
+    
+    #Aggregate
     "Topology",
+    "SCHEMA_VERSION",
+    "serialize_topology",
+    "deserialize_topology",
+    "save_topology",
+    "load_topology",
 ]

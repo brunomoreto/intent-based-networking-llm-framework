@@ -1,38 +1,31 @@
-"""
-Topology Domain - Aggregate Root
 
-This module defines the Topology aggregate root.
+"""Topology Domain - Aggregate Root.
 
-The Topology class is responsible for managing the lifecycle of domain
-entities while maintaining the structural consistency of the network.
+This module implements the Topology V2 aggregate.
 
-It is intentionally independent of ONOS, Mininet, Neo4j, Docker,
-OpenStack and Large Language Models.
+Topology owns the domain entities and protects its internal state
+through defensive copying and read-only collection views.
 """
 
 from __future__ import annotations
 
-# =============================================================================
-# Standard Library
-# =============================================================================
-
-from collections.abc import Iterator, Mapping
 from copy import deepcopy
 from types import MappingProxyType
+from typing import Iterator, Mapping
 
-# =============================================================================
-# Local Imports
-# =============================================================================
-
-from .models import (
+from .entities import (
+    Controller,
+    ControllerAssociation,
     Link,
     Metadata,
     Metrics,
     Node,
     Policy,
 )
-
 from .types import (
+    AssociationId,
+    ControllerId,
+    InterfaceId,
     LinkId,
     NodeId,
     PolicyId,
@@ -40,331 +33,366 @@ from .types import (
 
 
 class Topology:
-    """
-    Aggregate Root of the Topology Domain.
+    """Aggregate Root for a network topology.
+
+    Metadata, Nodes, Links, Controllers, Controller Associations,
+    Policies and Metrics are owned by this aggregate.
     """
 
-    def __init__(
-        self,
-        metadata: Metadata,
-    ) -> None:
-        """
-        Initialize a new topology.
-        """
-
+    def __init__(self, metadata: Metadata) -> None:
         self._metadata = deepcopy(metadata)
 
         self._nodes: dict[NodeId, Node] = {}
-
         self._links: dict[LinkId, Link] = {}
-
+        self._controllers: dict[ControllerId, Controller] = {}
+        self._controller_associations: dict[
+            AssociationId, ControllerAssociation
+        ] = {}
         self._policies: dict[PolicyId, Policy] = {}
 
         self._metrics = Metrics()
 
     # =========================================================================
-    # Properties
+    # Metadata
     # =========================================================================
 
     @property
     def metadata(self) -> Metadata:
-        """
-        Return a defensive copy of the topology metadata.
-        """
+        """Return a defensive copy of topology metadata."""
         return deepcopy(self._metadata)
+
+    def set_metadata(self, metadata: Metadata) -> None:
+        """Replace topology metadata using a defensive copy."""
+        self._metadata = deepcopy(metadata)
+
+    # =========================================================================
+    # Nodes
+    # =========================================================================
 
     @property
     def nodes(self) -> Mapping[NodeId, Node]:
-        """
-        Return a read-only snapshot of the topology nodes.
-        """
+        """Return a read-only snapshot of Nodes."""
         return MappingProxyType(deepcopy(self._nodes))
 
-    @property
-    def links(self) -> Mapping[LinkId, Link]:
-        """
-        Return a read-only snapshot of the topology links.
-        """
-        return MappingProxyType(deepcopy(self._links))
-
-    @property
-    def policies(self) -> Mapping[PolicyId, Policy]:
-        """
-        Return a read-only snapshot of the topology policies.
-        """
-        return MappingProxyType(deepcopy(self._policies))
-
-    @property
-    def metrics(self) -> Metrics:
-        """
-        Return a defensive copy of the topology metrics.
-        """
-        return deepcopy(self._metrics)
-
-    def set_metrics(self, metrics: Metrics) -> None:
-            """
-            Replace the topology metrics with a defensive copy.
-
-            Raises:
-                TypeError: If the provided object is not a Metrics instance.
-            """
-            if not isinstance(metrics, Metrics):
-                raise TypeError("metrics must be an instance of Metrics.")
-
-            self._metrics = deepcopy(metrics)
-
-
-    # =========================================================================
-    # Python Protocols
-    # =========================================================================
-
-    def __len__(self) -> int:
-        """
-        Return the number of nodes in the topology.
-        """
-        return len(self._nodes)
-
-    def __iter__(self) -> Iterator[Node]:
-        """Iterate over a snapshot of the topology nodes."""
-        return iter(deepcopy(tuple(self._nodes.values())))
-
-    def __contains__(self, item: object) -> bool:
-        """
-        Return True if a node identifier exists in the topology.
-        """
-        if not isinstance(item, str):
-            return False
-
-        return item in self._nodes
-
-    def __repr__(self) -> str:
-        """
-        Return a concise string representation of the topology.
-        """
-        return (
-            f"{self.__class__.__name__}("
-            f"name={self._metadata.name!r}, "
-            f"nodes={len(self._nodes)}, "
-            f"links={len(self._links)}, "
-            f"policies={len(self._policies)})"
-        )
-
-    # =========================================================================
-    # Node Operations
-    # =========================================================================
-
     def add_node(self, node: Node) -> None:
-        """
-        Add a node to the topology.
-
-        Raises:
-            TypeError: If the provided object is not a Node.
-            ValueError: If a node with the same identifier already exists.
-        """
-        if not isinstance(node, Node):
-            raise TypeError("node must be an instance of Node.")
-
+        """Add a Node to the aggregate."""
         if node.id in self._nodes:
-            raise ValueError(f"Node with ID '{node.id}' already exists.")
+            raise ValueError(f"Node already exists: {node.id}")
 
         self._nodes[node.id] = deepcopy(node)
 
     def get_node(self, node_id: NodeId) -> Node:
-        """
-        Return a defensive copy of a node.
-
-        Raises:
-            KeyError: If the node identifier does not exist.
-        """
+        """Return a defensive copy of a Node."""
         try:
-            node = self._nodes[node_id]
+            return deepcopy(self._nodes[node_id])
         except KeyError:
-            raise KeyError(
-                f"Node with ID '{node_id}' does not exist."
-            ) from None
-
-        return deepcopy(node)
+            raise KeyError(f"Node not found: {node_id}") from None
 
     def has_node(self, node_id: NodeId) -> bool:
-        """
-        Return True if a node with the given identifier exists.
-        """
+        """Check whether a Node exists."""
         return node_id in self._nodes
 
-    def remove_node(self, node_id: NodeId) -> None:
-        """
-        Remove a node from the topology.
+    def remove_node(self, node_id: NodeId) -> Node:
+        """Remove a Node from the aggregate.
 
-        Raises:
-            KeyError: If the node identifier does not exist.
-            ValueError: If the node is referenced by existing links.
+        A Node referenced by a Link or ControllerAssociation
+        cannot be removed until those references are removed.
         """
         if node_id not in self._nodes:
-            raise KeyError(f"Node with ID '{node_id}' does not exist.")
+            raise KeyError(f"Node not found: {node_id}")
 
-        for link in self._links.values():
-            if link.source == node_id or link.destination == node_id:
-                raise ValueError(
-                    f"Cannot remove node '{node_id}': "
-                    f"it is referenced by link '{link.id}'."
+        incident_links = [
+            link.id
+            for link in self._links.values()
+            if (
+                self._interface_belongs_to_node(
+                    link.source_interface_id,
+                    node_id,
                 )
+                or self._interface_belongs_to_node(
+                    link.destination_interface_id,
+                    node_id,
+                )
+            )
+        ]
 
-        del self._nodes[node_id]
+        if incident_links:
+            raise ValueError(
+                f"Cannot remove Node {node_id}: "
+                f"incident Links exist: {incident_links}"
+            )
+
+        associations = [
+            association.id
+            for association in self._controller_associations.values()
+            if association.node_id == node_id
+        ]
+
+        if associations:
+            raise ValueError(
+                f"Cannot remove Node {node_id}: "
+                f"ControllerAssociations exist: {associations}"
+            )
+
+        return deepcopy(self._nodes.pop(node_id))
+
+    def _interface_belongs_to_node(
+        self,
+        interface_id: InterfaceId,
+        node_id: NodeId,
+    ) -> bool:
+        """Check whether an Interface belongs to a Node."""
+        node = self._nodes.get(node_id)
+
+        if node is None:
+            return False
+
+        return any(
+            interface.id == interface_id
+            for interface in node.interfaces
+        )
 
     # =========================================================================
-    # Link Operations
+    # Links
     # =========================================================================
+
+    @property
+    def links(self) -> Mapping[LinkId, Link]:
+        """Return a read-only snapshot of Links."""
+        return MappingProxyType(deepcopy(self._links))
 
     def add_link(self, link: Link) -> None:
-        """
-        Add a link to the topology.
-
-        Raises:
-            TypeError: If the provided object is not a Link.
-            ValueError: If the link identifier already exists, either endpoint
-                does not exist, or the link connects a node to itself.
-        """
-        if not isinstance(link, Link):
-            raise TypeError("link must be an instance of Link.")
-
+        """Add a Link to the aggregate."""
         if link.id in self._links:
-            raise ValueError(
-                f"Link with ID '{link.id}' already exists."
-            )
-
-        if link.source not in self._nodes:
-            raise ValueError(
-                f"Source node '{link.source}' does not exist."
-            )
-
-        if link.destination not in self._nodes:
-            raise ValueError(
-                f"Destination node '{link.destination}' does not exist."
-            )
-
-        if link.source == link.destination:
-            raise ValueError(
-                f"Link '{link.id}' cannot connect a node to itself."
-            )
+            raise ValueError(f"Link already exists: {link.id}")
 
         self._links[link.id] = deepcopy(link)
 
     def get_link(self, link_id: LinkId) -> Link:
-        """
-        Return a defensive copy of a link.
-
-        Raises:
-            KeyError: If the link identifier does not exist.
-        """
+        """Return a defensive copy of a Link."""
         try:
-            link = self._links[link_id]
+            return deepcopy(self._links[link_id])
         except KeyError:
-            raise KeyError(
-                f"Link with ID '{link_id}' does not exist."
-            ) from None
-
-        return deepcopy(link)
+            raise KeyError(f"Link not found: {link_id}") from None
 
     def has_link(self, link_id: LinkId) -> bool:
-        """
-        Return True if a link with the given identifier exists.
-        """
+        """Check whether a Link exists."""
         return link_id in self._links
 
-    def remove_link(self, link_id: LinkId) -> None:
-        """
-        Remove a link from the topology.
+    def remove_link(self, link_id: LinkId) -> Link:
+        """Remove a Link and return a defensive copy."""
+        try:
+            return deepcopy(self._links.pop(link_id))
+        except KeyError:
+            raise KeyError(f"Link not found: {link_id}") from None
 
-        Raises:
-            KeyError: If the link identifier does not exist.
-        """
-        if link_id not in self._links:
-            raise KeyError(
-                f"Link with ID '{link_id}' does not exist."
+    # =========================================================================
+    # Controllers
+    # =========================================================================
+
+    @property
+    def controllers(self) -> Mapping[ControllerId, Controller]:
+        """Return a read-only snapshot of Controllers."""
+        return MappingProxyType(deepcopy(self._controllers))
+
+    def add_controller(self, controller: Controller) -> None:
+        """Add a Controller to the aggregate."""
+        if controller.id in self._controllers:
+            raise ValueError(
+                f"Controller already exists: {controller.id}"
             )
 
-        del self._links[link_id]
+        self._controllers[controller.id] = deepcopy(controller)
+
+    def get_controller(self, controller_id: ControllerId) -> Controller:
+        """Return a defensive copy of a Controller."""
+        try:
+            return deepcopy(self._controllers[controller_id])
+        except KeyError:
+            raise KeyError(
+                f"Controller not found: {controller_id}"
+            ) from None
+
+    def has_controller(self, controller_id: ControllerId) -> bool:
+        """Check whether a Controller exists."""
+        return controller_id in self._controllers
+
+    def remove_controller(
+        self,
+        controller_id: ControllerId,
+    ) -> Controller:
+        """Remove a Controller.
+
+        A Controller referenced by an association cannot be removed
+        until its associations are removed.
+        """
+        if controller_id not in self._controllers:
+            raise KeyError(f"Controller not found: {controller_id}")
+
+        associations = [
+            association.id
+            for association in self._controller_associations.values()
+            if association.controller_id == controller_id
+        ]
+
+        if associations:
+            raise ValueError(
+                f"Cannot remove Controller {controller_id}: "
+                f"ControllerAssociations exist: {associations}"
+            )
+
+        return deepcopy(self._controllers.pop(controller_id))
 
     # =========================================================================
-    # Policy Operations
+    # Controller Associations
     # =========================================================================
+
+    @property
+    def controller_associations(
+        self,
+    ) -> Mapping[AssociationId, ControllerAssociation]:
+        """Return a read-only snapshot of ControllerAssociations."""
+        return MappingProxyType(
+            deepcopy(self._controller_associations)
+        )
+
+    def add_controller_association(
+        self,
+        association: ControllerAssociation,
+    ) -> None:
+        """Add a ControllerAssociation to the aggregate."""
+        if association.id in self._controller_associations:
+            raise ValueError(
+                f"ControllerAssociation already exists: {association.id}"
+            )
+
+        self._controller_associations[association.id] = deepcopy(
+            association
+        )
+
+    def get_controller_association(
+        self,
+        association_id: AssociationId,
+    ) -> ControllerAssociation:
+        """Return a defensive copy of a ControllerAssociation."""
+        try:
+            return deepcopy(
+                self._controller_associations[association_id]
+            )
+        except KeyError:
+            raise KeyError(
+                f"ControllerAssociation not found: {association_id}"
+            ) from None
+
+    def has_controller_association(
+        self,
+        association_id: AssociationId,
+    ) -> bool:
+        """Check whether a ControllerAssociation exists."""
+        return association_id in self._controller_associations
+
+    def remove_controller_association(
+        self,
+        association_id: AssociationId,
+    ) -> ControllerAssociation:
+        """Remove a ControllerAssociation."""
+        try:
+            return deepcopy(
+                self._controller_associations.pop(association_id)
+            )
+        except KeyError:
+            raise KeyError(
+                f"ControllerAssociation not found: {association_id}"
+            ) from None
+
+    # =========================================================================
+    # Policies
+    # =========================================================================
+
+    @property
+    def policies(self) -> Mapping[PolicyId, Policy]:
+        """Return a read-only snapshot of Policies."""
+        return MappingProxyType(deepcopy(self._policies))
 
     def add_policy(self, policy: Policy) -> None:
-        """
-        Add a policy to the topology.
-
-        Raises:
-            TypeError: If the provided object is not a Policy.
-            ValueError: If a policy with the same identifier already exists.
-        """
-        if not isinstance(policy, Policy):
-            raise TypeError("policy must be an instance of Policy.")
-
+        """Add a Policy to the aggregate."""
         if policy.id in self._policies:
-            raise ValueError(
-                f"Policy with ID '{policy.id}' already exists."
-            )
+            raise ValueError(f"Policy already exists: {policy.id}")
 
         self._policies[policy.id] = deepcopy(policy)
 
-
     def get_policy(self, policy_id: PolicyId) -> Policy:
-        """
-        Return a defensive copy of a policy.
-
-        Raises:
-            KeyError: If the policy identifier does not exist.
-        """
+        """Return a defensive copy of a Policy."""
         try:
-            policy = self._policies[policy_id]
+            return deepcopy(self._policies[policy_id])
         except KeyError:
-            raise KeyError(
-                f"Policy with ID '{policy_id}' does not exist."
-            ) from None
-
-        return deepcopy(policy)
-
+            raise KeyError(f"Policy not found: {policy_id}") from None
 
     def has_policy(self, policy_id: PolicyId) -> bool:
-        """
-        Return True if a policy with the given identifier exists.
-        """
+        """Check whether a Policy exists."""
         return policy_id in self._policies
 
-
-    def remove_policy(self, policy_id: PolicyId) -> None:
-        """
-        Remove a policy from the topology.
-
-        Raises:
-            KeyError: If the policy identifier does not exist.
-        """
-        if policy_id not in self._policies:
-            raise KeyError(
-                f"Policy with ID '{policy_id}' does not exist."
-            )
-
-        del self._policies[policy_id]
+    def remove_policy(self, policy_id: PolicyId) -> Policy:
+        """Remove a Policy."""
+        try:
+            return deepcopy(self._policies.pop(policy_id))
+        except KeyError:
+            raise KeyError(f"Policy not found: {policy_id}") from None
 
     # =========================================================================
-    # Utility Methods
+    # Metrics
     # =========================================================================
 
-    def is_structurally_valid(self) -> bool:
-        """
-        Return True if the topology satisfies basic structural constraints.
+    @property
+    def metrics(self) -> Metrics:
+        """Return a defensive copy of Metrics."""
+        return deepcopy(self._metrics)
 
-        Checks that every link references existing nodes and that no link
-        connects a node to itself.
-        """
-        for link in self._links.values():
-            if link.source not in self._nodes:
-                return False
+    def set_metrics(self, metrics: Metrics) -> None:
+        """Replace Metrics using a defensive copy."""
+        self._metrics = deepcopy(metrics)
 
-            if link.destination not in self._nodes:
-                return False
+    # =========================================================================
+    # Collection Protocols
+    # =========================================================================
 
-            if link.source == link.destination:
-                return False
+    def __len__(self) -> int:
+        """Return the number of Nodes."""
+        return len(self._nodes)
 
-        return True
+    def __iter__(self) -> Iterator[Node]:
+        """Iterate over defensive copies of Nodes."""
+        return iter(deepcopy(list(self._nodes.values())))
+
+    def __contains__(self, node_id: object) -> bool:
+        """Check whether a Node ID exists."""
+        return node_id in self._nodes
+
+    def __repr__(self) -> str:
+        return (
+            f"Topology("
+            f"name={self._metadata.name!r}, "
+            f"nodes={len(self._nodes)}, "
+            f"links={len(self._links)}, "
+            f"policies={len(self._policies)}"
+            f")"
+        )
+
+    # =========================================================================
+    # Copy
+    # =========================================================================
+
+    def copy(self) -> Topology:
+        """Return a fully independent copy of the aggregate."""
+        copied = Topology(metadata=self._metadata)
+
+        copied._nodes = deepcopy(self._nodes)
+        copied._links = deepcopy(self._links)
+        copied._controllers = deepcopy(self._controllers)
+        copied._controller_associations = deepcopy(
+            self._controller_associations
+        )
+        copied._policies = deepcopy(self._policies)
+        copied._metrics = deepcopy(self._metrics)
+
+        return copied

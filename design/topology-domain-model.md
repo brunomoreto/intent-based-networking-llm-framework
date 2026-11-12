@@ -1,409 +1,333 @@
-# Topology Domain Model
+# Topology Domain Model V2
 
-**Document Version:** 1.0
+**Projeto:** Intent-Based Networking LLM Framework  
+**Documento:** `design/topology-domain-model.md`  
+**Versão:** 2.0  
+**Status:** Aprovado para implementação após congelamento da especificação
 
-**Status:** Draft
+## 1. Objetivo
 
----
+Definir o modelo de domínio da Topology V2, estabelecendo entidades, responsabilidades, relacionamentos, tipos e invariantes necessários para representar topologias de redes de forma independente de tecnologias específicas.
 
-# 1. Purpose
+A versão V2 substitui integralmente o modelo V1. Não haverá conversão, fallback ou compatibilidade retroativa com V1.
 
-This document defines the domain model adopted by the Intent-Based Networking LLM Framework.
+## 2. Princípios arquiteturais
 
-The objective of this model is to describe every conceptual entity manipulated by the framework independently of implementation technologies such as Mininet, ONOS, Neo4j, Docker, or Large Language Models.
+- A topologia é representada por um agregado cujo root é `Topology`.
+- Links conectam interfaces, e não diretamente Nodes.
+- Interfaces pertencem a Nodes.
+- Controllers são entidades independentes dos Nodes.
+- StaticRoutes pertencem a Routers.
+- A direção dos links é explicitamente representada.
+- Identificadores possuem unicidade global dentro da topologia.
+- O domínio não depende de Mininet, ONOS ou outras tecnologias de infraestrutura.
+- A validação não modifica o estado da topologia.
+- O agregado deve oferecer cópia defensiva por meio de `snapshot()`.
 
-The domain model represents the conceptual foundation upon which every framework component is built.
+## 3. Topology Aggregate
 
----
+O agregado `Topology` contém:
 
-# 2. Domain Architecture
+- `metadata`
+- `nodes`
+- `links`
+- `controllers`
+- `controller_associations`
+- `policies`
+- `metrics`
 
-The framework is organized into three conceptual layers.
+O agregado é responsável por preservar a integridade das entidades e suas referências.
 
-```text
-                    Framework
+Interfaces são aninhadas em Nodes. StaticRoutes são aninhadas em Routers.
 
-                        │
+## 4. Entidades do domínio
 
-     ┌──────────────────┼──────────────────┐
+### 4.1 Metadata
 
-     ▼                  ▼                  ▼
+| Campo | Tipo | Obrigatório | Default |
+|---|---|---|---|
+| id | TopologyId | Sim | — |
+| name | str | Sim | — |
+| description | str | Não | `""` |
+| author | str | Não | `""` |
+| version | str | Não | `"1.0"` |
+| created_at | datetime ou None | Não | `None` |
+| topology_source | TopologySource | Não | `CUSTOM` |
+| tags | list[str] | Não | `[]` |
 
- Core Domain     Application Services   Infrastructure Adapters
+### 4.2 NetworkElement
+
+Classe-base dos elementos do plano de dados:
+
+- `id: NodeId`
+- `name: str`
+- `attributes: Attributes = {}`
+
+### 4.3 Node
+
+Especialização de NetworkElement:
+
+- `node_type: NodeType`
+- `interfaces: list[Interface] = []`
+
+Tipos de Node:
+
+- `Host`
+- `Switch`
+- `Router`
+
+Nodes podem existir sem interfaces e sem links.
+
+### 4.4 Router
+
+Além dos campos herdados de Node:
+
+- `ipv4_forwarding: bool = false`
+- `ipv6_forwarding: bool = false`
+- `static_routes: list[StaticRoute] = []`
+
+### 4.5 Interface
+
+Representa uma interface de rede pertencente a um Node.
+
+| Campo | Tipo | Default |
+|---|---|---|
+| id | InterfaceId | Obrigatório |
+| name | str | Obrigatório |
+| mac_address | str ou None | Ausente |
+| ipv4_addresses | list[IPv4Interface] | `[]` |
+| ipv6_addresses | list[IPv6Interface] | `[]` |
+| mtu | int ou None | Ausente |
+| speed | Bandwidth ou None | Ausente |
+| status | InterfaceStatus | `UP` |
+| attributes | Attributes | `{}` |
+
+A propriedade da interface é determinada pelo seu aninhamento em `Node.interfaces`. Não haverá duplicação de `node_id`.
+
+Uma interface poderá existir sem endereço IP e sem participação em um Link.
+
+Uma interface poderá participar de, no máximo, um Link.
+
+### 4.6 StaticRoute
+
+Representa uma rota estática pertencente a um Router.
+
+- `id: RouteId`
+- `destination: IPv4Network | IPv6Network`
+- `next_hop: IPv4Address | IPv6Address | None`
+- `outgoing_interface_id: InterfaceId | None`
+- `metric: int = 0`
+
+Invariantes:
+
+- Pelo menos um entre `next_hop` e `outgoing_interface_id` deve estar presente.
+- A família IP do next hop deve corresponder à família do destino.
+- A interface de saída deve pertencer ao mesmo Router.
+- Rotas diretamente conectadas são inferidas a partir dos prefixos das interfaces e não devem ser duplicadas em `static_routes`.
+
+### 4.7 LinkDirection
+
+Representa os parâmetros de uma direção de um enlace.
+
+- `bandwidth: Bandwidth`
+- `delay: Delay`
+- `weight: Weight`
+- `packet_loss: PacketLoss`
+- `enabled: bool`
+
+Unidades e limites:
+
+| Campo | Unidade | Restrição |
+|---|---|---|
+| bandwidth | Mbps | Maior que zero |
+| delay | ms | Maior ou igual a zero |
+| weight | Adimensional | Maior que zero |
+| packet_loss | % | Entre 0 e 100 |
+
+### 4.8 Link
+
+Representa a conexão entre duas interfaces.
+
+- `id: LinkId`
+- `source_interface_id: InterfaceId`
+- `destination_interface_id: InterfaceId`
+- `forward: LinkDirection`
+- `reverse: LinkDirection | None`
+- `status: LinkStatus = ACTIVE`
+- `attributes: Attributes = {}`
+
+Invariantes:
+
+- `forward` é obrigatório.
+- `reverse` é opcional.
+- A ausência de `reverse` significa que não existe direção reversa declarada.
+- Não se deve inferir ou gerar automaticamente a direção reversa.
+- As interfaces de origem e destino devem pertencer a Nodes distintos.
+- Uma interface não pode participar de mais de um Link.
+- Links paralelos entre os mesmos Nodes são permitidos quando utilizam interfaces distintas.
+- Links entre interfaces do mesmo Node são proibidos nesta versão.
+- `FAILED` ou `DISABLED` torna indisponíveis todas as direções do Link, independentemente do atributo `enabled`.
+
+### 4.9 Controller
+
+Entidade independente dos Nodes:
+
+- `id: ControllerId`
+- `name: str`
+- `controller_type: str`
+- `endpoint: str`
+- `port: int`
+- `protocol: str`
+- `status: ControllerStatus = UNKNOWN`
+- `attributes: Attributes = {}`
+
+`endpoint` representa hostname ou endereço IP, sem porta embutida.
+
+`port` deve estar no intervalo de 1 a 65535.
+
+`controller_type` e `protocol` são strings extensíveis.
+
+### 4.10 ControllerAssociation
+
+Representa a associação entre um Controller e um Node.
+
+- `id: AssociationId`
+- `controller_id: ControllerId`
+- `node_id: NodeId`
+- `role: AssociationRole | None`
+
+Roles:
+
+- `MASTER`
+- `STANDBY`
+- `EQUAL`
+
+Controllers sem associações e Nodes sem Controllers são permitidos.
+
+Não são permitidas associações duplicadas entre o mesmo Controller e Node.
+
+### 4.11 Policy
+
+- `id: PolicyId`
+- `name: str`
+- `description: str = ""`
+- `enabled: bool = True`
+- `attributes: Attributes = {}`
+
+### 4.12 Metrics
+
+Representação:
+
+```python
+@dataclass(slots=True, kw_only=True)
+class Metrics:
+    values: MetricValues = field(default_factory=dict)
 ```
 
-Only the **Core Domain** is described in this document.
+Tipos:
 
----
+- `MetricValue = float`
+- `MetricValues = dict[str, MetricValue]`
 
-# 3. Core Domain
+## 5. Enumerations
 
-The Core Domain is composed of four primary domain objects.
+| Enum | Valores |
+|---|---|
+| NodeType | HOST, SWITCH, ROUTER |
+| LinkStatus | ACTIVE, FAILED, DISABLED |
+| InterfaceStatus | UP, DOWN, DISABLED |
+| ControllerStatus | UNKNOWN, ACTIVE, DEGRADED, UNAVAILABLE |
+| AssociationRole | MASTER, STANDBY, EQUAL |
+| TopologySource | CUSTOM, REFERENCE, SYNTHETIC, PRODUCTION |
 
-```text
-Core Domain
+`CONTROLLER` não pertence a `NodeType`.
 
-├── Topology
-├── Recommendation
-├── ValidationReport
-└── Experiment
-```
+## 6. Identificadores
 
-These objects represent the language shared by every framework component.
+Todos os identificadores pertencem a um namespace global dentro do agregado `Topology`.
 
----
+A unicidade abrange:
 
-# 4. Domain Model
+- Metadata.id
+- Node.id
+- Interface.id
+- Link.id
+- Controller.id
+- StaticRoute.id
+- ControllerAssociation.id
+- Policy.id
 
-```text
-                         +----------------------+
-                         |      Topology        |
-                         +----------------------+
-                         | Metadata             |
-                         | Nodes               |
-                         | Links               |
-                         | Policies            |
-                         | Metrics             |
-                         +----------+----------+
-                                    |
-             +----------------------+----------------------+
-             |                      |                      |
-             ▼                      ▼                      ▼
-       Metadata                 Link             NetworkElement
-                                                     |
-                                                     ▼
-                                                   Node
-                                                     |
-                 +-------------+-------------+-------------+-------------+
-                 |             |             |             |             |
-                 ▼             ▼             ▼             ▼             ▼
-             Switch         Host       Controller      Router     Future Nodes
+Nenhuma entidade poderá compartilhar um identificador com outra entidade, mesmo que pertençam a tipos diferentes.
 
+## 7. Tipos fundamentais
 
-+---------------------------------------------------------------+
+Os identificadores são aliases de string:
 
-                    Domain Objects
+- `TopologyId`
+- `NodeId`
+- `InterfaceId`
+- `LinkId`
+- `ControllerId`
+- `RouteId`
+- `AssociationId`
+- `PolicyId`
 
-+---------------------------------------------------------------+
+Outros tipos:
 
-Recommendation
+- `Attributes = dict[str, Any]`
+- `Bandwidth`
+- `Delay`
+- `PacketLoss`
+- `Weight`
 
-ValidationReport
+Os endereços IP utilizam os tipos nativos do módulo `ipaddress` do Python.
 
-Experiment
-```
+## 8. PathResult
 
----
+O resultado de busca de caminhos deve preservar a identidade dos Nodes, Interfaces e Links percorridos.
 
-# 5. Topology
+Cada segmento identifica:
 
-The **Topology** object represents the complete abstract description of a communication network.
+- Link utilizado;
+- interface de origem do segmento;
+- interface de destino do segmento;
+- direção utilizada (`FORWARD` ou `REVERSE`).
 
-It is the central object of the framework and serves as the single source of truth for every processing stage.
+O resultado completo identifica:
 
-Topology is independent of infrastructure technologies. It represents
-only the conceptual state of the network and does not reference
-controller-specific, emulator-specific, or database-specific objects.
+- Node de origem;
+- Node de destino;
+- sequência ordenada de Nodes;
+- sequência ordenada de segmentos;
+- custo calculado;
+- métrica utilizada para calcular o custo.
 
-A topology contains:
+Métricas definidas:
 
-- Metadata
-- Nodes
-- Links
-- Policies
-- Metrics
+- `HOP_COUNT`
+- `WEIGHT_SUM`
+- `DELAY_SUM`
 
-Domain identifiers are represented as string-based identifiers.
-The topology domain currently defines identifiers for topologies,
-nodes, links, and policies.
+O custo e sua métrica devem ser informados conjuntamente ou permanecer ambos ausentes.
 
-Metric identifiers are not defined at this stage because metrics
-are represented as named values within the Metrics object rather
-than as independent domain entities.
-Topology
+O resultado deve permitir distinguir caminhos que utilizam Links paralelos diferentes.
 
-│
+## 9. Responsabilidades e separação arquitetural
 
-├── Metadata
+O domínio representa a topologia e suas invariantes.
 
-├── Node
+A validação estrutural e semântica é responsabilidade do serviço de validação.
 
-├── Link
+A compatibilidade de execução é responsabilidade de uma validação específica, separada da integridade estrutural.
 
-├── Policy
+Os adapters são responsáveis por traduzir informações de tecnologias como ONOS e Mininet para o modelo de domínio.
 
-└── Metrics
+Serviços de resiliência devem operar sobre a topologia V2 sem incorporar suas análises à validação estrutural.
 
-Node
+## 10. Evolução
 
-↓
+A evolução do modelo deverá preservar os contratos explícitos desta versão.
 
-NetworkElement
+Novos atributos específicos de tecnologias podem ser armazenados em `attributes`, desde que não substituam campos estruturais definidos pelo domínio.
 
-NetworkElement (classe base abstrata)
-
-↓
-
-Node (classe concreta)
-
-↓
-
-Switch
-Host
-Router
-Controller
-
-
-Every module either consumes or produces a Topology object.
-
----
-
-# 6. Metadata
-
-Metadata stores descriptive information associated with a topology.
-
-Typical attributes include:
-
-- Name
-- Description
-- Author
-- Version
-- Creation Date
-- Topology Source
-- Tags
-
-Metadata has no operational impact on the network itself.
-
-The topology source identifies the origin or provenance of a topology. The current domain supports Custom, Reference, Synthetic, and Production sources. This classification is independent of the network's structural topology, such as a Spine-Leaf, Ring, or Mesh arrangement.
----
-
-# 7. Network Element
-
-A Network Element represents any logical entity participating in the network.
-
-Rather than restricting the model to switches and hosts, the framework adopts a generic abstraction capable of supporting future technologies.
-
-Every Network Element contains:
-
-- Identifier
-- Name
-- Attributes
-
-Node
-
-- Node Type
-- Properties
-
-NetworkElement
-                      ▲
-                      │
-                   Node
-        ┌────────┼────────┐
-        ▼        ▼        ▼
-    Switch     Host    Router
-                   ▼
-              Controller
-
-
-Specializations currently supported are:
-
-- Switch
-- Host
-- Controller
-- Router
-
-Future versions may include:
-
-- Firewall
-- Gateway
-- Load Balancer
-- Wireless Access Point
-- P4 Switch
-- Virtual Network Function
-
----
-
-# 8. Link
-
-A Link represents a logical communication relationship between two Nodes.
-
-Each Link contains:
-
-- Source
-- Destination
-- Bandwidth
-- Delay
-- Packet Loss
-- Weight
-- Status
-- Bidirectional Flag
-- Attributes
-
-The domain model intentionally avoids implementation-specific characteristics.
-
-The topology domain defines three link states: Active, Failed, and Disabled.
-Active indicates an operational link, Failed represents an operational failure,
-and Disabled indicates a link that has been deliberately deactivated. These
-states are sufficient for the current topology model.
-
----
-
-# 9. Recommendation
-
-A Recommendation represents a proposed network modification generated by an external planning component.
-
-Recommendations are independent of the LLM used to generate them.
-
-Typical information includes:
-
-- Recommendation ID
-- Goal
-- Action
-- Target Elements
-- Parameters
-- Confidence
-- Reasoning
-- Source
-
-Examples of actions include:
-
-- Add Link
-- Remove Link
-- Change Cost
-- Add Redundancy
-- Segment Network
-- Modify Policy
-
-Recommendations never modify the topology directly.
-
----
-
-# 10. Validation Report
-
-A Validation Report represents the deterministic evaluation of a recommendation.
-
-Each report summarizes every validation stage executed by the framework.
-
-Typical sections include:
-
-- Structural Validation
-- Policy Validation
-- Metric Evaluation
-- Deployment Feasibility
-
-Possible outcomes are:
-
-- Approved
-- Rejected
-- Approved with Warnings
-
----
-
-# 11. Experiment
-
-An Experiment represents a complete execution of the framework.
-
-It defines:
-
-- Dataset
-- Objective
-- LLM
-- Validation Strategy
-- Metrics
-- Results
-
-Experiments guarantee reproducibility across different scenarios.
-
----
-
-# 12. Relationships
-
-The following relationships exist among domain objects.
-
-```text
-Experiment
-
-↓
-
-Topology
-
-↓
-
-Recommendation
-
-↓
-
-ValidationReport
-
-↓
-
-Execution
-
-↓
-
-Updated Topology
-
-↓
-
-Metrics
-
-↓
-
-Results
-```
-
----
-
-# 13. Design Principles
-
-The domain model follows six principles.
-
-1. Technology Independence
-
-2. Single Source of Truth
-
-3. Loose Coupling
-
-4. Extensibility
-
-5. Deterministic Validation
-
-6. Experiment Reproducibility
-
----
-# 14. Domain Constraints
-
-A Topology shall contain exactly one Metadata object.
-
-Every Node shall have a unique identifier.
-
-Every Link shall connect two existing Nodes.
-
-A Link cannot connect a Node to itself.
-
-Policies shall not modify topology directly.
-
-Metrics are descriptive objects and never modify topology.
-
-
-# 14. Future Extensions
-
-The model has been designed to evolve without changes to its core architecture.
-
-Future extensions include:
-
-- Wireless Networks
-
-- Multi-domain SDN
-
-- Digital Twins
-
-- Cloud-native Services
-
-- Intent Policies
-
-- Security Policies
-
-- Service Function Chaining
-
-- P4 Networks
+A versão V1 permanece exclusivamente como histórico de desenvolvimento e experimentação.
