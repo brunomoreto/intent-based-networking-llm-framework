@@ -1,0 +1,136 @@
+{
+  "schema_version": 2,
+  "metadata": {
+    "id": "topology-001",
+    "name": "Serialization Test",
+    "description": "Complete V2 round-trip test",
+    "author": "Test",
+    "version": "2.0",
+    "created_at": "2026-11-17T18:03:10.177619+00:00",
+    "topology_source": "synthetic",
+    "tags": [
+      "test",
+      "round-trip"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "host-01",
+      "name": "Host 01",
+      "node_type": "host",
+      "status": "up",
+      "attributes": {},
+      "interfaces": [
+        {
+          "id": "if-host-01",
+          "name": "eth0",
+          "mac_address": "02:00:00:00:00:01",
+          "ipv4_addresses": [
+            "192.168.1.10/24"
+          ],
+          "ipv6_addresses": [
+            "2001:db8:1::10/64"
+          ],
+          "mtu": null,
+          "speed": null,
+          "status": "up",
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "id": "switch-01",
+      "name": "Switch 01",
+      "node_type": "switch",
+      "status": "up",
+      "attributes": {},
+      "interfaces": [
+        {
+          "id": "if-switch-01",
+          "name": "eth1",
+          "mac_address": "02:00:00:00:00:02",
+          "ipv4_addresses": [],
+          "ipv6_addresses": [],
+          "mtu": null,
+          "speed": null,
+          "status": "up",
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "id": "router-01",
+      "name": "Router 01",
+      "node_type": "router",
+      "status": "up",
+      "attributes": {},
+      "interfaces": [],
+      "ipv4_forwarding": true,
+      "ipv6_forwarding": false,
+      "static_routes": [
+        {
+          "id": "route-01",
+          "destination": "10.10.0.0/16",
+          "next_hop": "192.168.1.1",
+          "outgoing_interface_id": null,
+          "metric": 10
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "id": "link-01",
+      "source_interface_id": "if-host-01",
+      "destination_interface_id": "if-switch-01",
+      "forward": {
+        "bandwidth": 1000,
+        "delay": 2,
+        "weight": 1,
+        "packet_loss": 0,
+        "enabled": true
+      },
+      "reverse": null,
+      "status": "up",
+      "attributes": {}
+    }
+  ],
+  "controllers": [
+    {
+      "id": "controller-01",
+      "name": "ONOS",
+      "controller_type": "onos",
+      "endpoint": "192.168.1.100",
+      "port": 6653,
+      "protocol": "openflow",
+      "status": "active",
+      "attributes": {}
+    }
+  ],
+  "controller_associations": [
+    {
+      "id": "association-01",
+      "controller_id": "controller-01",
+      "node_id": "switch-01",
+      "role": "master"
+    }
+  ],
+  "policies": [
+    {
+      "id": "policy-01",
+      "name": "Test Policy",
+      "description": "Serialization test policy",
+      "enabled": true,
+      "attributes": {
+        "priority": 100
+      }
+    }
+  ],
+  "metrics": {
+    "values": {
+      "latency_ms": 2.5,
+      "packet_loss": 0,
+      "active_flows": 10
+    }
+  }
+}

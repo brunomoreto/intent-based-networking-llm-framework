@@ -17,7 +17,7 @@ from typing import Any
 
 from .enums import (
     AssociationRole, ControllerStatus, InterfaceStatus, LinkStatus,
-    NodeType, TopologySource,
+    NodeStatus, NodeType, TopologySource,
 )
 from .entities import (
     Controller, ControllerAssociation, Host, Interface, Link,
@@ -221,6 +221,7 @@ _NODE_COMMON = {
     "id",
     "name",
     "node_type",
+    "status",
     "attributes",
     "interfaces",
 }
@@ -739,6 +740,13 @@ def validate_document(document: Mapping[str, object]) -> ValidationReport:
                 "Node",
                 report,
                 required=True,
+            )
+            _check_enum(
+                node,
+                "status",
+                NodeStatus,
+                "Node",
+                report,
             )
             _check_attributes(node, "attributes", "Node", report)
 
@@ -1370,6 +1378,16 @@ def validate_topology(topology: Topology) -> ValidationReport:
             )
 
     for node in nodes.values():
+        if not isinstance(node.status, NodeStatus):
+            _issue(
+                report,
+                "NODE-004",
+                "Node",
+                str(node.id),
+                "status",
+                "Node status must be a NodeStatus value.",
+            )
+
         if not isinstance(node, (Host, Switch, Router)):
             _issue(
                 report,
@@ -1405,6 +1423,16 @@ def validate_topology(topology: Topology) -> ValidationReport:
             )
 
         for interface in node.interfaces:
+            if not isinstance(interface.status, InterfaceStatus):
+                _issue(
+                    report,
+                    "INT-008",
+                    "Interface",
+                    str(interface.id),
+                    "status",
+                    "Interface status must be an InterfaceStatus value.",
+                )
+
             if (
                 interface.mac_address is not None
                 and not _valid_mac(interface.mac_address)
@@ -1524,6 +1552,16 @@ def validate_topology(topology: Topology) -> ValidationReport:
 
     # Link endpoint references, topology constraints, and directions.
     for link in links.values():
+        if not isinstance(link.status, LinkStatus):
+            _issue(
+                report,
+                "LINK-006",
+                "Link",
+                str(link.id),
+                "status",
+                "Link status must be a LinkStatus value.",
+            )
+
         source = interfaces.get(link.source_interface_id)
         destination = interfaces.get(link.destination_interface_id)
 
@@ -1598,8 +1636,8 @@ def validate_topology(topology: Topology) -> ValidationReport:
             )
 
         if link.status in (
-            LinkStatus.FAILED,
-            LinkStatus.DISABLED,
+            LinkStatus.DOWN,
+            LinkStatus.MAINTENANCE,
         ):
             _issue(
                 report,
@@ -1895,6 +1933,16 @@ def validate_topology(topology: Topology) -> ValidationReport:
 
     # Controllers.
     for controller in controllers.values():
+        if not isinstance(controller.status, ControllerStatus):
+            _issue(
+                report,
+                "CTRL-004",
+                "Controller",
+                str(controller.id),
+                "status",
+                "Controller status must be a ControllerStatus value.",
+            )
+
         if (
             not isinstance(controller.controller_type, str)
             or not controller.controller_type.strip()

@@ -193,7 +193,7 @@ def test_switches_use_openflow_13(topology, fake_api):
 def test_skips_inactive_links(topology, fake_api):
     link_id = next(iter(topology.links))
     link = topology.get_link(link_id)
-    link.status = LinkStatus.FAILED
+    link.status = LinkStatus.DOWN
 
     # The domain aggregate stores defensive copies. Replace the original
     # link by rebuilding the topology with this one marked as failed.
@@ -205,7 +205,7 @@ def test_skips_inactive_links(topology, fake_api):
 
     for current in topology.links.values():
         if current.id == link_id:
-            current.status = LinkStatus.FAILED
+            current.status = LinkStatus.DOWN
         modified.add_link(current)
 
     net = create_mininet_network(
@@ -393,7 +393,7 @@ def test_skips_link_with_disabled_interface(topology, fake_api):
     for node in topology.nodes.values():
         for interface in node.interfaces:
             if interface.id == target_interface_id:
-                interface.status = InterfaceStatus.DISABLED
+                interface.status = InterfaceStatus.DOWN
 
         modified.add_node(node)
 
@@ -623,7 +623,7 @@ def test_does_not_configure_interface_with_inactive_link(
 
     def mutate_link(link):
         if link.id == first_link_id:
-            link.status = LinkStatus.FAILED
+            link.status = LinkStatus.DOWN
 
     modified = _rebuild_topology(
         topology,

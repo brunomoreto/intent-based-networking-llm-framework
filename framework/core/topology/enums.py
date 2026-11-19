@@ -1,4 +1,3 @@
-
 """
 Topology Domain - Enumerations
 
@@ -25,23 +24,25 @@ class NodeType(StrEnum):
 
 
 # =============================================================================
-# Link Status
+# Operational Status
 # =============================================================================
 
-class LinkStatus(StrEnum):
-    ACTIVE = "active"
-    FAILED = "failed"
-    DISABLED = "disabled"
+class NodeStatus(StrEnum):
+    UP = "up"
+    DOWN = "down"
+    MAINTENANCE = "maintenance"
 
-
-# =============================================================================
-# Interface Status
-# =============================================================================
 
 class InterfaceStatus(StrEnum):
     UP = "up"
     DOWN = "down"
-    DISABLED = "disabled"
+    MAINTENANCE = "maintenance"
+
+
+class LinkStatus(StrEnum):
+    UP = "up"
+    DOWN = "down"
+    MAINTENANCE = "maintenance"
 
 
 # =============================================================================
@@ -82,8 +83,9 @@ class TopologySource(StrEnum):
 
 __all__ = [
     "NodeType",
-    "LinkStatus",
+    "NodeStatus",
     "InterfaceStatus",
+    "LinkStatus",
     "ControllerStatus",
     "AssociationRole",
     "TopologySource",

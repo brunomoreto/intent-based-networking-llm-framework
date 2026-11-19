@@ -1,4 +1,3 @@
-
 from datetime import datetime, timezone
 from ipaddress import IPv4Address, IPv4Interface, IPv4Network, IPv6Interface
 
@@ -98,7 +97,7 @@ def build_topology():
                 enabled=True,
             ),
             reverse=None,
-            status=LinkStatus.ACTIVE,
+            status=LinkStatus.UP,
         )
     )
 

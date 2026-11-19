@@ -66,7 +66,7 @@ def validate_path(
                 continue
 
             # Only active Links can provide connectivity.
-            if link.status != LinkStatus.ACTIVE:
+            if link.status != LinkStatus.UP:
                 continue
 
             source_node = interface_to_node.get(

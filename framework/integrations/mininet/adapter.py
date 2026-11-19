@@ -184,7 +184,7 @@ def create_mininet_network(
             _interface_port(interface, node)
 
     for link in links:
-        if link.status != LinkStatus.ACTIVE:
+        if link.status != LinkStatus.UP:
             continue
 
         source_entry = interface_index.get(link.source_interface_id)
@@ -251,7 +251,7 @@ def create_mininet_network(
         )
 
         for link in links:
-            if link.status != LinkStatus.ACTIVE:
+            if link.status != LinkStatus.UP:
                 continue
 
             source_node, source_interface = interface_index[

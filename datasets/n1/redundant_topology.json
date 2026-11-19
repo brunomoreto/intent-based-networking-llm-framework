@@ -217,7 +217,7 @@
         "packet_loss": 0,
         "enabled": true
       },
-      "status": "active",
+      "status": "up",
       "attributes": {}
     },
     {
@@ -238,7 +238,7 @@
         "packet_loss": 0,
         "enabled": true
       },
-      "status": "active",
+      "status": "up",
       "attributes": {}
     },
     {
@@ -259,7 +259,7 @@
         "packet_loss": 0,
         "enabled": true
       },
-      "status": "active",
+      "status": "up",
       "attributes": {}
     },
     {
@@ -280,7 +280,7 @@
         "packet_loss": 0,
         "enabled": true
       },
-      "status": "active",
+      "status": "up",
       "attributes": {}
     },
     {
@@ -301,7 +301,7 @@
         "packet_loss": 0,
         "enabled": true
       },
-      "status": "active",
+      "status": "up",
       "attributes": {}
     },
     {
@@ -322,7 +322,7 @@
         "packet_loss": 0,
         "enabled": true
       },
-      "status": "active",
+      "status": "up",
       "attributes": {}
     }
   ],

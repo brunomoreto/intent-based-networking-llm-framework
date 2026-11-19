@@ -21,6 +21,7 @@ from .enums import (
     InterfaceStatus,
     LinkStatus,
     NodeType,
+    NodeStatus,
     TopologySource,
 )
 from .entities import (
@@ -89,6 +90,7 @@ def _serialize_node(node: NetworkElement) -> dict[str, Any]:
         "id": node.id,
         "name": node.name,
         "node_type": node.node_type.value,
+        "status": node.status.value,
         "attributes": node.attributes,
         "interfaces": [
             _serialize_interface(interface)
@@ -237,6 +239,7 @@ def _deserialize_node(data: Mapping[str, Any]) -> NetworkElement:
     common = {
         "id": data["id"],
         "name": data["name"],
+        "status": NodeStatus(data.get("status", "up")),
         "attributes": dict(data.get("attributes", {})),
         "interfaces": [
             _deserialize_interface(interface)
@@ -322,7 +325,7 @@ def deserialize_topology(document: Mapping[str, Any]) -> Topology:
                 if reverse_data is not None
                 else None
             ),
-            status=LinkStatus(link_data.get("status", "active")),
+            status=LinkStatus(link_data.get("status", "up")),
             attributes=dict(link_data.get("attributes", {})),
         )
         topology.add_link(link)

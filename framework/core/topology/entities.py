@@ -25,6 +25,7 @@ from .enums import (
     ControllerStatus,
     InterfaceStatus,
     LinkStatus,
+    NodeStatus,
     NodeType,
     TopologySource,
 )
@@ -107,6 +108,7 @@ class Node(NetworkElement):
     """Base class for network nodes."""
 
     node_type: NodeType
+    status: NodeStatus = NodeStatus.UP
     interfaces: list[Interface] = field(default_factory=list)
 
 
@@ -189,7 +191,7 @@ class Link:
     destination_interface_id: InterfaceId
     forward: LinkDirection
     reverse: LinkDirection | None = None
-    status: LinkStatus = LinkStatus.ACTIVE
+    status: LinkStatus = LinkStatus.UP
     attributes: Attributes = field(default_factory=dict)
 
 
