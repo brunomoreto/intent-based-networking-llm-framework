@@ -1,9 +1,5 @@
-from .adapter import (
-    MininetAdapterError,
-    create_mininet_network,
-)
+"""Mininet integration for Topology Model V2."""
 
-__all__ = [
-    "MininetAdapterError",
-    "create_mininet_network",
-]
+from .adapter import MininetAdapterError, create_mininet_network
+
+__all__ = ["MininetAdapterError", "create_mininet_network"]
