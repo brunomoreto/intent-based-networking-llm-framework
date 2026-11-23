@@ -820,8 +820,15 @@ def test_real_mininet_builds_host_link_and_reaches_peer():
         assert "192.0.2.1/24" in h1.cmd("ip -4 -o addr show dev h1-eth0")
         assert "192.0.2.2/24" in h2.cmd("ip -4 -o addr show dev h2-eth0")
 
-        packet_loss = net.ping([h1, h2], timeout=2)
-        assert packet_loss == 0
+        ping_status = h1.cmd(
+            "ping -c 1 -W 2 -n 192.0.2.2 >/dev/null 2>&1; "
+            "printf '%s' $?"
+        ).strip()
+
+        assert ping_status == "0", (
+            f"Host h1 could not reach 192.0.2.2. "
+            f"Ping exit status: {ping_status}"
+        )
     finally:
         net.stop()
 
