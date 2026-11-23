@@ -226,6 +226,10 @@ _NODE_COMMON = {
     "interfaces",
 }
 
+_HOST_EXTRA = {
+    "static_routes",
+}
+
 _ROUTER_EXTRA = {
     "ipv4_forwarding",
     "ipv6_forwarding",
@@ -506,8 +510,36 @@ def _check_number(
         )
 
 
+def _is_json_compatible(value: Any) -> bool:
+    """Return True if value can be represented as valid JSON."""
+
+    if value is None or isinstance(value, (str, bool)):
+        return True
+
+    if _is_int(value):
+        return True
+
+    if isinstance(value, float):
+        return math.isfinite(value)
+
+    if isinstance(value, list):
+        return all(_is_json_compatible(item) for item in value)
+
+    if _mapping(value):
+        return all(
+            isinstance(key, str) and _is_json_compatible(item)
+            for key, item in value.items()
+        )
+
+    return False
+
 def _check_attributes(data, key, path, report):
-    if key in data and not _mapping(data[key]):
+    if key not in data:
+        return
+
+    attributes = data[key]
+
+    if not _mapping(attributes):
         _issue(
             report,
             "DOC-004",
@@ -515,6 +547,21 @@ def _check_attributes(data, key, path, report):
             None,
             key,
             f"'{key}' must be an object/mapping.",
+        )
+        return
+
+    if not _is_json_compatible(attributes):
+        _issue(
+            report,
+            "DOC-004",
+            path,
+            None,
+            key,
+            (
+                f"'{key}' must contain only JSON-compatible values: "
+                "objects with string keys, arrays, strings, numbers, "
+                "booleans, or null. NaN and Infinity are not allowed."
+            ),
         )
 
 
@@ -721,12 +768,22 @@ def validate_document(document: Mapping[str, object]) -> ValidationReport:
         for i, node in enumerate(nodes):
             path = f"nodes[{i}]"
 
+            node_type = (
+                node.get("node_type")
+                if isinstance(node, Mapping)
+                else None
+            )
+
+            # Accept the union here so type-specific fields can be reported
+            # with a stable DOC-006 code, entity ID, and field name below.
+            allowed_node_fields = _NODE_COMMON | _HOST_EXTRA | _ROUTER_EXTRA
+
             if not _check_object(
                 node,
                 path,
                 report,
                 required={"id", "name", "node_type"},
-                allowed=_NODE_COMMON | _ROUTER_EXTRA,
+                allowed=allowed_node_fields,
                 entity="Node",
             ):
                 continue
@@ -835,23 +892,54 @@ def validate_document(document: Mapping[str, object]) -> ValidationReport:
 
                         if values is not None:
                             for address in values:
-                                if not _valid_ip_interface(address, version):
+                                if (
+                                    not isinstance(address, str)
+                                    or not _valid_ip_interface(address, version)
+                                ):
                                     _issue(
                                         report,
                                         "DOC-011",
                                         "Interface",
                                         interface.get("id"),
                                         key,
-                                        f"Invalid IPv{version} interface "
-                                        f"representation: {address!r}.",
+                                        f"IPv{version} address must be a "
+                                        "valid interface string in JSON "
+                                        f"(received {address!r}).",
                                     )
 
             node_type = node.get("node_type")
 
+            forbidden_fields_by_type = {
+                NodeType.HOST.value: {
+                    "ipv4_forwarding",
+                    "ipv6_forwarding",
+                },
+                NodeType.SWITCH.value: {
+                    "static_routes",
+                    "ipv4_forwarding",
+                    "ipv6_forwarding",
+                },
+                NodeType.ROUTER.value: set(),
+            }
+
+            for key in forbidden_fields_by_type.get(node_type, set()):
+                if key in node:
+                    _issue(
+                        report,
+                        "DOC-006",
+                        "Node",
+                        node.get("id"),
+                        key,
+                        f"Field '{key}' is not allowed for node_type '{node_type}'.",
+                    )
             if node_type == NodeType.ROUTER.value:
                 for key in ("ipv4_forwarding", "ipv6_forwarding"):
                     _check_bool(node, key, "Router", report)
 
+            if node_type in (
+                NodeType.HOST.value,
+                NodeType.ROUTER.value,
+            ):
                 routes = _check_array(
                     node,
                     "static_routes",
@@ -860,6 +948,23 @@ def validate_document(document: Mapping[str, object]) -> ValidationReport:
                 )
 
                 if routes is not None:
+                    node_interfaces = node.get("interfaces", [])
+                    local_interface_ids = {
+                        interface.get("id")
+                        for interface in node_interfaces
+                        if isinstance(interface, Mapping)
+                        and isinstance(interface.get("id"), str)
+                    }
+                    all_interface_ids = {
+                        interface.get("id")
+                        for candidate in nodes
+                        if isinstance(candidate, Mapping)
+                        and isinstance(candidate.get("interfaces"), list)
+                        for interface in candidate["interfaces"]
+                        if isinstance(interface, Mapping)
+                        and isinstance(interface.get("id"), str)
+                    }
+
                     for j, route in enumerate(routes):
                         rpath = f"{path}.static_routes[{j}]"
 
@@ -881,22 +986,30 @@ def validate_document(document: Mapping[str, object]) -> ValidationReport:
                             required=True,
                         )
 
-                        if (
+                        destination_valid = (
                             "destination" in route
-                            and not _valid_ip_network(route["destination"])
-                        ):
+                            and isinstance(route["destination"], str)
+                            and _valid_ip_network(route["destination"])
+                        )
+                        if "destination" in route and not destination_valid:
                             _issue(
                                 report,
                                 "DOC-011",
                                 "StaticRoute",
                                 route.get("id"),
                                 "destination",
-                                "Invalid destination network.",
+                                "destination must be a valid network "
+                                "string in JSON.",
                             )
 
+                        next_hop_valid = (
+                            route.get("next_hop") is not None
+                            and isinstance(route["next_hop"], str)
+                            and _valid_ip_address(route["next_hop"])
+                        )
                         if (
                             route.get("next_hop") is not None
-                            and not _valid_ip_address(route["next_hop"])
+                            and not next_hop_valid
                         ):
                             _issue(
                                 report,
@@ -904,8 +1017,29 @@ def validate_document(document: Mapping[str, object]) -> ValidationReport:
                                 "StaticRoute",
                                 route.get("id"),
                                 "next_hop",
-                                "Invalid next-hop IP address.",
+                                "next_hop must be a valid IP address "
+                                "string in JSON or null.",
                             )
+
+                        if destination_valid and next_hop_valid:
+                            parsed_destination = ip_network(
+                                route["destination"],
+                                strict=False,
+                            )
+                            parsed_next_hop = ip_address(route["next_hop"])
+                            if (
+                                parsed_destination.version
+                                != parsed_next_hop.version
+                            ):
+                                _issue(
+                                    report,
+                                    "ROUTE-003",
+                                    "StaticRoute",
+                                    route.get("id"),
+                                    "next_hop",
+                                    "Next-hop IP family differs from "
+                                    "destination network family.",
+                                )
 
                         _check_string(
                             route,
@@ -914,6 +1048,43 @@ def validate_document(document: Mapping[str, object]) -> ValidationReport:
                             report,
                             allow_none=True,
                         )
+                        if (
+                            route.get("next_hop") is None
+                            and route.get("outgoing_interface_id") is None
+                        ):
+                            _issue(
+                                report,
+                                "ROUTE-004",
+                                "StaticRoute",
+                                route.get("id"),
+                                "next_hop/outgoing_interface_id",
+                                "At least one of next_hop or "
+                                "outgoing_interface_id must be provided.",
+                            )
+
+                        outgoing = route.get("outgoing_interface_id")
+                        if isinstance(outgoing, str):
+                            if outgoing not in all_interface_ids:
+                                _issue(
+                                    report,
+                                    "REF-002",
+                                    "StaticRoute",
+                                    route.get("id"),
+                                    "outgoing_interface_id",
+                                    "StaticRoute references an outgoing "
+                                    "Interface that does not exist.",
+                                )
+                            elif outgoing not in local_interface_ids:
+                                _issue(
+                                    report,
+                                    "REF-003",
+                                    "StaticRoute",
+                                    route.get("id"),
+                                    "outgoing_interface_id",
+                                    "Outgoing Interface does not belong "
+                                    "to this Node.",
+                                )
+
                         _check_number(
                             route,
                             "metric",
@@ -921,23 +1092,18 @@ def validate_document(document: Mapping[str, object]) -> ValidationReport:
                             report,
                             integer=True,
                         )
+                        metric = route.get("metric")
+                        if _is_int(metric) and metric < 0:
+                            _issue(
+                                report,
+                                "ROUTE-007",
+                                "StaticRoute",
+                                route.get("id"),
+                                "metric",
+                                "StaticRoute metric must not be negative.",
+                            )
 
-            elif node_type in (
-                NodeType.HOST.value,
-                NodeType.SWITCH.value,
-            ):
-                for key in _ROUTER_EXTRA:
-                    if key in node:
-                        _issue(
-                            report,
-                            "DOC-006",
-                            "Node",
-                            node.get("id"),
-                            key,
-                            f"Router-specific field '{key}' is not valid "
-                            f"for {node_type}.",
-                        )
-
+            
     links = _check_array(document, "links", "root", report)
 
     if links is not None:
@@ -1325,7 +1491,7 @@ def validate_topology(topology: Topology) -> ValidationReport:
             for interface in node.interfaces
         )
 
-        if isinstance(node, Router):
+        if isinstance(node, (Host, Router)):
             identifiers.extend(
                 (route.id, "StaticRoute")
                 for route in node.static_routes
@@ -1398,9 +1564,15 @@ def validate_topology(topology: Topology) -> ValidationReport:
                 "Node has an unsupported domain type.",
             )
 
-        if isinstance(node, (Host, Switch)) and (
-            hasattr(node, "ipv4_forwarding")
-            or hasattr(node, "static_routes")
+        if (
+            isinstance(node, Host)
+            and hasattr(node, "ipv4_forwarding")
+        ) or (
+            isinstance(node, Switch)
+            and (
+                hasattr(node, "ipv4_forwarding")
+                or hasattr(node, "static_routes")
+            )
         ):
             _issue(
                 report,
@@ -1408,9 +1580,19 @@ def validate_topology(topology: Topology) -> ValidationReport:
                 "Node",
                 str(node.id),
                 None,
-                "Host or Switch contains Router-specific fields.",
+                "Node contains fields that are not valid for its type.",
             )
-
+        if isinstance(node, Router):
+            for key in ("ipv4_forwarding", "ipv6_forwarding"):
+                if not isinstance(getattr(node, key), bool):
+                    _issue(
+                        report,
+                        "NODE-006",
+                        "Router",
+                        str(node.id),
+                        key,
+                        f"{key} must be a boolean.",
+                    )
         if not node.interfaces:
             _issue(
                 report,
@@ -1509,10 +1691,9 @@ def validate_topology(topology: Topology) -> ValidationReport:
 
                     key = (
                         family,
-                        str(value.ip),
-                        value.network.prefixlen,
+                        str(value.ip),                    
                     )
-
+                    
                     if key in local_seen:
                         _issue(
                             report,
@@ -1530,6 +1711,22 @@ def validate_topology(topology: Topology) -> ValidationReport:
                     all_ip_entries.setdefault(key, []).append(
                         (interface.id, node.id)
                     )
+        expected_node_types = {
+            Host: NodeType.HOST,
+            Switch: NodeType.SWITCH,
+            Router: NodeType.ROUTER,
+        }
+        expected_type = expected_node_types.get(type(node))
+
+        if expected_type is not None and node.node_type != expected_type:
+            _issue(
+                report,
+                "NODE-005",
+                "Node",
+                str(node.id),
+                "node_type",
+                "Node class and node_type attribute are inconsistent.",
+            )
 
     for key, entries in all_ip_entries.items():
         distinct_interfaces = {
@@ -1537,7 +1734,7 @@ def validate_topology(topology: Topology) -> ValidationReport:
         }
 
         if len(distinct_interfaces) > 1:
-            family, address, prefix = key
+            family, address = key
 
             _issue(
                 report,
@@ -1545,7 +1742,7 @@ def validate_topology(topology: Topology) -> ValidationReport:
                 "Interface",
                 str(entries[-1][0]),
                 f"ipv{family}_addresses",
-                f"IPv{family} address {address}/{prefix} is "
+                f"IPv{family} address {address} is "
                 "duplicated across different Interfaces.",
                 _WARNING,
             )
@@ -1739,9 +1936,9 @@ def validate_topology(topology: Topology) -> ValidationReport:
                     _INFO,
                 )
 
-    # Router routes.
+    # Static routes declared by Hosts and Routers.
     for node in nodes.values():
-        if not isinstance(node, Router):
+        if not isinstance(node, (Host, Router)):
             continue
 
         for route in node.static_routes:
@@ -1832,17 +2029,17 @@ def validate_topology(topology: Topology) -> ValidationReport:
                         "StaticRoute",
                         str(route.id),
                         "outgoing_interface_id",
-                        "Outgoing Interface does not belong to this Router.",
+                        "Outgoing Interface does not belong to this Node.",
                     )
 
-            if _is_int(route.metric) and route.metric < 0:
+            if not _is_int(route.metric) or route.metric < 0:
                 _issue(
                     report,
                     "ROUTE-007",
                     "StaticRoute",
                     str(route.id),
                     "metric",
-                    "StaticRoute metric must not be negative.",
+                    "StaticRoute metric must be a non-negative integer.",
                 )
 
             if destination_valid:
@@ -1874,7 +2071,7 @@ def validate_topology(topology: Topology) -> ValidationReport:
                         str(route.id),
                         "destination",
                         "StaticRoute duplicates a directly connected "
-                        "network of this Router.",
+                        "network of this Node.",
                     )
 
                 if (
@@ -1913,12 +2110,14 @@ def validate_topology(topology: Topology) -> ValidationReport:
                             _WARNING,
                         )
 
-                if (
-                    isinstance(route.destination, IPv4Network)
-                    and not node.ipv4_forwarding
-                ) or (
-                    isinstance(route.destination, IPv6Network)
-                    and not node.ipv6_forwarding
+                if isinstance(node, Router) and (
+                    (
+                        isinstance(route.destination, IPv4Network)
+                        and not node.ipv4_forwarding
+                    ) or (
+                        isinstance(route.destination, IPv6Network)
+                        and not node.ipv6_forwarding
+                    )
                 ):
                     _issue(
                         report,

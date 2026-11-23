@@ -33,7 +33,7 @@ from .entities import (
     LinkDirection,
     Metadata,
     Metrics,
-    NetworkElement,
+    Node,
     Policy,
     Router,
     StaticRoute,
@@ -85,7 +85,7 @@ def _serialize_static_route(route: StaticRoute) -> dict[str, Any]:
     }
 
 
-def _serialize_node(node: NetworkElement) -> dict[str, Any]:
+def _serialize_node(node: Node) -> dict[str, Any]:
     data: dict[str, Any] = {
         "id": node.id,
         "name": node.name,
@@ -98,14 +98,16 @@ def _serialize_node(node: NetworkElement) -> dict[str, Any]:
         ],
     }
 
+    if isinstance(node, (Host, Router)):
+        data["static_routes"] = [
+            _serialize_static_route(route)
+            for route in node.static_routes
+        ]
+
     if isinstance(node, Router):
         data.update({
             "ipv4_forwarding": node.ipv4_forwarding,
             "ipv6_forwarding": node.ipv6_forwarding,
-            "static_routes": [
-                _serialize_static_route(route)
-                for route in node.static_routes
-            ],
         })
 
     return data
@@ -233,7 +235,7 @@ def _deserialize_static_route(data: Mapping[str, Any]) -> StaticRoute:
     )
 
 
-def _deserialize_node(data: Mapping[str, Any]) -> NetworkElement:
+def _deserialize_node(data: Mapping[str, Any]) -> Node:
     node_type = NodeType(data["node_type"])
 
     common = {
@@ -248,7 +250,13 @@ def _deserialize_node(data: Mapping[str, Any]) -> NetworkElement:
     }
 
     if node_type is NodeType.HOST:
-        return Host(**common)
+        return Host(
+            **common,
+            static_routes=[
+                _deserialize_static_route(route)
+                for route in data.get("static_routes", [])
+            ],
+        )
 
     if node_type is NodeType.SWITCH:
         return Switch(**common)
@@ -399,6 +407,7 @@ def save_topology(
             file,
             indent=indent,
             ensure_ascii=False,
+            allow_nan=False,
         )
         file.write("\n")
 

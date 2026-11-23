@@ -52,6 +52,15 @@ def build_topology():
                 ipv6_addresses=[IPv6Interface("2001:db8:1::10/64")],
             )
         ],
+        static_routes=[
+        StaticRoute(
+            id="host-route-01",
+            destination=IPv4Network("10.20.0.0/16"),
+            next_hop=IPv4Address("192.168.1.1"),
+            outgoing_interface_id="if-host-01",
+            metric=20,
+        )
+        ],
     )
 
     switch = Switch(
@@ -182,7 +191,42 @@ def main():
     print("Round-trip em memória: OK")
     print("Round-trip em arquivo JSON: OK")
     print("Preservação dos tipos e entidades V2: OK")
+    # Verificação das rotas estáticas de Host
+    host_routes = loaded.nodes["host-01"].static_routes
 
+    assert len(host_routes) == 1
+    assert host_routes[0].id == "host-route-01"
+    assert host_routes[0].destination == IPv4Network("10.20.0.0/16")
+    assert host_routes[0].next_hop == IPv4Address("192.168.1.1")
+    assert host_routes[0].outgoing_interface_id == "if-host-01"
+    assert host_routes[0].metric == 20
+
+    # Verificação das rotas estáticas de Router
+    router_routes = loaded.nodes["router-01"].static_routes
+
+    assert len(router_routes) == 1
+    assert router_routes[0].id == "route-01"
+    assert router_routes[0].destination == IPv4Network("10.10.0.0/16")
+    assert router_routes[0].metric == 10
+
+    # Switch não deve possuir rotas estáticas
+    assert not hasattr(loaded.nodes["switch-01"], "static_routes")
+
+    # Compatibilidade com documentos antigos sem static_routes
+    legacy_document = serialize_topology(original)
+
+    for node_data in legacy_document["nodes"]:
+        node_data.pop("static_routes", None)
+
+    legacy_restored = deserialize_topology(legacy_document)
+
+    assert legacy_restored.nodes["host-01"].static_routes == []
+    assert legacy_restored.nodes["router-01"].static_routes == []
+
+    print("Rotas estáticas em Host: OK")
+    print("Rotas estáticas em Router: OK")
+    print("Switch sem rotas estáticas: OK")
+    print("Compatibilidade com JSON V2 anterior: OK")
 
 if __name__ == "__main__":
     main()

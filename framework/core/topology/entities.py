@@ -121,6 +121,7 @@ class Host(Node):
     """End-system network node."""
 
     node_type: NodeType = field(default=NodeType.HOST, init=False)
+    static_routes: list[StaticRoute] = field(default_factory=list)
 
 
 # =============================================================================
@@ -140,7 +141,7 @@ class Switch(Node):
 
 @dataclass(slots=True, kw_only=True)
 class StaticRoute:
-    """Static IPv4 or IPv6 route configured on a Router."""
+    """Static IPv4 or IPv6 route configured on a network node."""
 
     id: RouteId
     destination: IPv4Network | IPv6Network

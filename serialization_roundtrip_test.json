@@ -6,7 +6,7 @@
     "description": "Complete V2 round-trip test",
     "author": "Test",
     "version": "2.0",
-    "created_at": "2026-11-17T18:03:10.177619+00:00",
+    "created_at": "2026-11-23T14:58:00.373806+00:00",
     "topology_source": "synthetic",
     "tags": [
       "test",
@@ -35,6 +35,15 @@
           "speed": null,
           "status": "up",
           "attributes": {}
+        }
+      ],
+      "static_routes": [
+        {
+          "id": "host-route-01",
+          "destination": "10.20.0.0/16",
+          "next_hop": "192.168.1.1",
+          "outgoing_interface_id": "if-host-01",
+          "metric": 20
         }
       ]
     },
@@ -65,8 +74,6 @@
       "status": "up",
       "attributes": {},
       "interfaces": [],
-      "ipv4_forwarding": true,
-      "ipv6_forwarding": false,
       "static_routes": [
         {
           "id": "route-01",
@@ -75,7 +82,9 @@
           "outgoing_interface_id": null,
           "metric": 10
         }
-      ]
+      ],
+      "ipv4_forwarding": true,
+      "ipv6_forwarding": false
     }
   ],
   "links": [
