@@ -57,7 +57,7 @@ def find_path(
     # Build the directed graph from active Links.
     for link in topology.links.values():
 
-        if link.status != LinkStatus.ACTIVE:
+        if link.status != LinkStatus.UP:
             continue
 
         source_node = interface_to_node.get(
