@@ -1,0 +1,301 @@
+{
+  "schema_version": 2,
+  "metadata": {
+    "id": "router-topology-v2-final",
+    "name": "Two Subnets with Linux Router - Final",
+    "description": "Final experimental V2 topology for IPv4 inter-subnet routing through a Linux router. MAC addresses are unspecified and assigned by Mininet.",
+    "author": "Artigo",
+    "version": "2.1",
+    "created_at": null,
+    "topology_source": "synthetic",
+    "tags": [
+      "experimental",
+      "router",
+      "ipv4",
+      "static-routing",
+      "onos",
+      "mininet",
+      "mac-auto-assignment"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "host-01",
+      "name": "Host 01",
+      "node_type": "host",
+      "status": "up",
+      "attributes": {},
+      "interfaces": [
+        {
+          "id": "if-host-01",
+          "name": "eth0",
+          "mac_address": null,
+          "ipv4_addresses": [
+            "192.168.1.10/24"
+          ],
+          "ipv6_addresses": [],
+          "mtu": null,
+          "speed": null,
+          "status": "up",
+          "attributes": {}
+        }
+      ],
+      "static_routes": [
+        {
+          "id": "route-host-01",
+          "destination": "10.10.0.0/16",
+          "next_hop": "192.168.1.1",
+          "outgoing_interface_id": "if-host-01",
+          "metric": 10
+        }
+      ]
+    },
+    {
+      "id": "switch-01",
+      "name": "Switch 01",
+      "node_type": "switch",
+      "status": "up",
+      "attributes": {},
+      "interfaces": [
+        {
+          "id": "if-switch-01-host",
+          "name": "eth0",
+          "mac_address": null,
+          "ipv4_addresses": [],
+          "ipv6_addresses": [],
+          "mtu": null,
+          "speed": null,
+          "status": "up",
+          "attributes": {}
+        },
+        {
+          "id": "if-switch-01-router",
+          "name": "eth1",
+          "mac_address": null,
+          "ipv4_addresses": [],
+          "ipv6_addresses": [],
+          "mtu": null,
+          "speed": null,
+          "status": "up",
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "id": "router-01",
+      "name": "Router 01",
+      "node_type": "router",
+      "status": "up",
+      "attributes": {},
+      "interfaces": [
+        {
+          "id": "if-router-01-net-a",
+          "name": "eth0",
+          "mac_address": null,
+          "ipv4_addresses": [
+            "192.168.1.1/24"
+          ],
+          "ipv6_addresses": [],
+          "mtu": null,
+          "speed": null,
+          "status": "up",
+          "attributes": {}
+        },
+        {
+          "id": "if-router-01-net-b",
+          "name": "eth1",
+          "mac_address": null,
+          "ipv4_addresses": [
+            "10.10.0.1/16"
+          ],
+          "ipv6_addresses": [],
+          "mtu": null,
+          "speed": null,
+          "status": "up",
+          "attributes": {}
+        }
+      ],
+      "static_routes": [],
+      "ipv4_forwarding": true,
+      "ipv6_forwarding": false
+    },
+    {
+      "id": "switch-02",
+      "name": "Switch 02",
+      "node_type": "switch",
+      "status": "up",
+      "attributes": {},
+      "interfaces": [
+        {
+          "id": "if-switch-02-host",
+          "name": "eth0",
+          "mac_address": null,
+          "ipv4_addresses": [],
+          "ipv6_addresses": [],
+          "mtu": null,
+          "speed": null,
+          "status": "up",
+          "attributes": {}
+        },
+        {
+          "id": "if-switch-02-router",
+          "name": "eth1",
+          "mac_address": null,
+          "ipv4_addresses": [],
+          "ipv6_addresses": [],
+          "mtu": null,
+          "speed": null,
+          "status": "up",
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "id": "host-02",
+      "name": "Host 02",
+      "node_type": "host",
+      "status": "up",
+      "attributes": {},
+      "interfaces": [
+        {
+          "id": "if-host-02",
+          "name": "eth0",
+          "mac_address": null,
+          "ipv4_addresses": [
+            "10.10.0.10/16"
+          ],
+          "ipv6_addresses": [],
+          "mtu": null,
+          "speed": null,
+          "status": "up",
+          "attributes": {}
+        }
+      ],
+      "static_routes": [
+        {
+          "id": "route-host-02",
+          "destination": "192.168.1.0/24",
+          "next_hop": "10.10.0.1",
+          "outgoing_interface_id": "if-host-02",
+          "metric": 10
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "id": "link-host-01-switch-01",
+      "source_interface_id": "if-host-01",
+      "destination_interface_id": "if-switch-01-host",
+      "forward": {
+        "bandwidth": 1000,
+        "delay": 1,
+        "weight": 1,
+        "packet_loss": 0,
+        "enabled": true
+      },
+      "reverse": {
+        "bandwidth": 1000,
+        "delay": 1,
+        "weight": 1,
+        "packet_loss": 0,
+        "enabled": true
+      },
+      "status": "up",
+      "attributes": {}
+    },
+    {
+      "id": "link-switch-01-router-01",
+      "source_interface_id": "if-switch-01-router",
+      "destination_interface_id": "if-router-01-net-a",
+      "forward": {
+        "bandwidth": 1000,
+        "delay": 1,
+        "weight": 1,
+        "packet_loss": 0,
+        "enabled": true
+      },
+      "reverse": {
+        "bandwidth": 1000,
+        "delay": 1,
+        "weight": 1,
+        "packet_loss": 0,
+        "enabled": true
+      },
+      "status": "up",
+      "attributes": {}
+    },
+    {
+      "id": "link-host-02-switch-02",
+      "source_interface_id": "if-host-02",
+      "destination_interface_id": "if-switch-02-host",
+      "forward": {
+        "bandwidth": 1000,
+        "delay": 1,
+        "weight": 1,
+        "packet_loss": 0,
+        "enabled": true
+      },
+      "reverse": {
+        "bandwidth": 1000,
+        "delay": 1,
+        "weight": 1,
+        "packet_loss": 0,
+        "enabled": true
+      },
+      "status": "up",
+      "attributes": {}
+    },
+    {
+      "id": "link-switch-02-router-01",
+      "source_interface_id": "if-switch-02-router",
+      "destination_interface_id": "if-router-01-net-b",
+      "forward": {
+        "bandwidth": 1000,
+        "delay": 1,
+        "weight": 1,
+        "packet_loss": 0,
+        "enabled": true
+      },
+      "reverse": {
+        "bandwidth": 1000,
+        "delay": 1,
+        "weight": 1,
+        "packet_loss": 0,
+        "enabled": true
+      },
+      "status": "up",
+      "attributes": {}
+    }
+  ],
+  "controllers": [
+    {
+      "id": "controller-01",
+      "name": "ONOS",
+      "controller_type": "onos",
+      "endpoint": "10.145.83.64",
+      "port": 6653,
+      "protocol": "openflow",
+      "status": "active",
+      "attributes": {}
+    }
+  ],
+  "controller_associations": [
+    {
+      "id": "association-switch-01",
+      "controller_id": "controller-01",
+      "node_id": "switch-01",
+      "role": "master"
+    },
+    {
+      "id": "association-switch-02",
+      "controller_id": "controller-01",
+      "node_id": "switch-02",
+      "role": "master"
+    }
+  ],
+  "policies": [],
+  "metrics": {
+    "values": {}
+  }
+}
